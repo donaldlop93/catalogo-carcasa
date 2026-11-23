@@ -1007,7 +1007,11 @@
             <div class="flex flex-wrap items-center gap-6 pt-1 border-t border-gray-200 text-xs">
               <label class="inline-flex items-center gap-2 font-bold cursor-pointer">
                 <input type="checkbox" id="pdfIncludeCover" checked class="rounded text-carcasa-green">
-                <span>Incluir Portada Institucional Oficial</span>
+                <span>Incluir Portada Institucional</span>
+              </label>
+              <label class="inline-flex items-center gap-2 font-bold cursor-pointer">
+                <input type="checkbox" id="pdfIncludeClosing" checked class="rounded text-carcasa-green">
+                <span>Incluir Cierre "Trabajemos Juntos"</span>
               </label>
               <label class="inline-flex items-center gap-2 font-bold cursor-pointer">
                 <input type="checkbox" id="pdfIncludePrices" checked class="rounded text-carcasa-green">
@@ -2382,9 +2386,10 @@
       const selectedCat = document.getElementById("pdfFilterCategory").value;
       const selectedBrand = document.getElementById("pdfFilterBrand").value;
       const includeCover = document.getElementById("pdfIncludeCover").checked;
+      const includeClosing = document.getElementById("pdfIncludeClosing") ? document.getElementById("pdfIncludeClosing").checked : true;
       const includePrices = document.getElementById("pdfIncludePrices").checked;
 
-      // Filtrar productos
+      // Filtrar productos activos
       let targetProducts = products.filter(p => {
         if (!p.activo) return false;
         if (selectedCat !== "Todas" && p.categoria !== selectedCat) return false;
@@ -2407,7 +2412,7 @@
       btnGenerate.classList.add("opacity-50");
 
       try {
-        updatePdfProgressText("Iniciando compilador de catálogo PDF...");
+        updatePdfProgressText("Iniciando maquetador editorial del catálogo...");
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF({
           orientation: "portrait",
@@ -2415,11 +2420,24 @@
           format: "a4"
         });
 
-        // Dimensiones estándar A4 a 150 DPI
+        // Dimensiones estándar A4 a 150 DPI y factores de escala para enlaces interactivos
         const W = 1240;
         const H = 1754;
+        const scaleX = 210 / W;
+        const scaleY = 297 / H;
 
-        // Agrupar por categoría
+        // Paleta Corporativa Oficial
+        const C_VERDE = "#2F713B";
+        const C_AMARILLO = "#E6B82E";
+        const C_AZUL = "#20A9D4";
+        const C_ROJO = "#D9272E";
+        const C_MARINO = "#14213B";
+        const C_CARBON = "#111A18";
+        const C_BLANCO = "#FFFFFF";
+        const C_GRIS_FONDO = "#F8FAFC";
+        const C_GRIS_BORDE = "#E2E8F0";
+
+        // Agrupar productos por categoría
         const categoriesMap = {};
         targetProducts.forEach(p => {
           const cat = p.categoria || "Maquinaria General";
@@ -2436,125 +2454,130 @@
           const prods = categoriesMap[cat];
           totalPages += Math.ceil(prods.length / 3);
         });
+        if (includeClosing) totalPages += 1;
 
         let currentPageNum = 1;
+        let interiorSectionIndex = 1;
 
-        // ==========================================
-        // 1. PÁGINA DE PORTADA (SI ESTÁ ACTIVA)
-        // ==========================================
+        // =====================================================================
+        // 1. PÁGINA DE PORTADA (SEGÚN GUÍA VISUAL OFICIAL - PÁG 2)
+        // =====================================================================
         if (includeCover) {
-          updatePdfProgressText(`Generando portada institucional (Página 1 de ${totalPages})...`);
+          updatePdfProgressText(`Generando portada editorial (Página 1 de ${totalPages})...`);
           const coverCanvas = document.createElement("canvas");
           coverCanvas.width = W;
           coverCanvas.height = H;
           const ctx = coverCanvas.getContext("2d");
 
-          // Fondo oscuro industrial (#171A18)
-          ctx.fillStyle = "#171A18";
+          // Fondo blanco exterior (márgenes de impresión)
+          ctx.fillStyle = C_BLANCO;
           ctx.fillRect(0, 0, W, H);
 
-          // Detalles decorativos corporativos
-          ctx.fillStyle = "#276B24";
-          ctx.fillRect(0, 0, W, 24);
-          ctx.fillRect(0, H - 24, W, 24);
+          // Contenedor principal Carbón (#111A18) con esquinas redondeadas
+          const cX = 60, cY = 60, cW = W - 120, cH = H - 120;
+          ctx.save();
+          drawRoundedRect(ctx, cX, cY, cW, cH, 20);
+          ctx.clip();
 
-          ctx.fillStyle = "#D5A52B";
-          ctx.fillRect(0, 24, W, 6);
-          ctx.fillRect(0, H - 30, W, 6);
+          ctx.fillStyle = C_CARBON;
+          ctx.fillRect(cX, cY, cW, cH);
 
-          // Marco interior sutil
-          ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
-          ctx.lineWidth = 2;
-          ctx.strokeRect(60, 60, W - 120, H - 120);
+          // Barra superior amarilla (#E6B82E)
+          ctx.fillStyle = C_AMARILLO;
+          ctx.fillRect(cX, cY, cW, 26);
 
-          // Logotipo oficial CARCASA
-          const logoImg = await loadSafeImage("assets/images/logo.jpg");
-          const logoSize = 220;
-          const logoX = (W - logoSize) / 2;
-          const logoY = 320;
+          // Tarjeta blanca centrada para el logotipo
+          const logoCardW = 220, logoCardH = 170;
+          const logoCardX = (W - logoCardW) / 2;
+          const logoCardY = cY + 160;
 
-          drawRoundedRect(ctx, logoX, logoY, logoSize, logoSize, 30);
-          ctx.fillStyle = "#FFFFFF";
+          drawRoundedRect(ctx, logoCardX, logoCardY, logoCardW, logoCardH, 24);
+          ctx.fillStyle = C_BLANCO;
           ctx.fill();
-          ctx.lineWidth = 4;
-          ctx.strokeStyle = "#276B24";
-          ctx.stroke();
 
+          const logoImg = await loadSafeImage("assets/images/logo.jpg");
           if (logoImg) {
             ctx.save();
-            drawRoundedRect(ctx, logoX + 6, logoY + 6, logoSize - 12, logoSize - 12, 24);
+            drawRoundedRect(ctx, logoCardX + 8, logoCardY + 8, logoCardW - 16, logoCardH - 16, 18);
             ctx.clip();
-            ctx.drawImage(logoImg, logoX + 6, logoY + 6, logoSize - 12, logoSize - 12);
+            const sc = Math.min((logoCardW - 24) / logoImg.naturalWidth, (logoCardH - 24) / logoImg.naturalHeight);
+            const dw = logoImg.naturalWidth * sc;
+            const dh = logoImg.naturalHeight * sc;
+            ctx.drawImage(logoImg, logoCardX + (logoCardW - dw) / 2, logoCardY + (logoCardH - dh) / 2, dw, dh);
             ctx.restore();
           }
 
-          // Textos institucionales Portada
-          ctx.fillStyle = "#FFFFFF";
-          ctx.font = "900 68px Inter, Arial, sans-serif";
+          // Nombre de Marca
+          ctx.fillStyle = C_BLANCO;
+          ctx.font = "900 64px Inter, Arial, sans-serif";
           ctx.textAlign = "center";
-          ctx.fillText("CARCASA", W / 2, 630);
+          ctx.fillText("CARCASA", W / 2, logoCardY + logoCardH + 90);
 
-          ctx.fillStyle = "#D5A52B";
-          ctx.font = "800 28px Inter, Arial, sans-serif";
-          ctx.fillText("JINOTEGA • NICARAGUA", W / 2, 680);
+          // Ubicación en amarillo
+          ctx.fillStyle = C_AMARILLO;
+          ctx.font = "800 22px Inter, Arial, sans-serif";
+          ctx.fillText("JINOTEGA • NICARAGUA", W / 2, logoCardY + logoCardH + 138);
 
-          ctx.fillStyle = "#FFFFFF";
-          ctx.font = "900 42px Inter, Arial, sans-serif";
-          ctx.fillText("CATÁLOGO DE PRODUCTOS", W / 2, 790);
+          // Título del catálogo
+          ctx.fillStyle = C_BLANCO;
+          ctx.font = "900 44px Inter, Arial, sans-serif";
+          ctx.fillText("CATÁLOGO DE PRODUCTOS", W / 2, logoCardY + logoCardH + 260);
 
-          ctx.fillStyle = "#20B9EF";
-          ctx.font = "700 24px Inter, Arial, sans-serif";
-          ctx.fillText("MAQUINARIA AGRÍCOLA • INDUSTRIAL • MOTORES • REPUESTOS", W / 2, 840);
+          // Líneas de negocio en celeste (#20A9D4)
+          const businessLine = selectedCat === "Todas"
+            ? "MAQUINARIA AGRÍCOLA • INDUSTRIAL • MOTORES"
+            : `LÍNEA: ${selectedCat.toUpperCase()}`;
+          ctx.fillStyle = C_AZUL;
+          ctx.font = "800 24px Inter, Arial, sans-serif";
+          ctx.fillText(businessLine, W / 2, logoCardY + logoCardH + 315);
 
-          // Resumen del filtro
-          const subtitleText = selectedCat === "Todas"
-            ? "LÍNEA COMPLETA DE EQUIPOS COMERCIALES"
-            : `LÍNEA ESPECIALIZADA: ${selectedCat.toUpperCase()}`;
-          ctx.fillStyle = "#9CA3AF";
-          ctx.font = "600 22px Inter, Arial, sans-serif";
-          ctx.fillText(subtitleText, W / 2, 920);
+          // Frase descriptiva
+          ctx.fillStyle = "#94A3B8";
+          ctx.font = "500 22px Inter, Arial, sans-serif";
+          ctx.fillText("Equipos, herramientas y soluciones para tu trabajo", W / 2, logoCardY + logoCardH + 375);
 
-          // Cuadro de contacto inferior en portada
-          const contactBoxW = 900;
-          const contactBoxH = 260;
-          const contactBoxX = (W - contactBoxW) / 2;
-          const contactBoxY = H - 420;
+          // Bloque inferior redondeado de contacto con borde verde (#2F713B)
+          const botBoxW = 860, botBoxH = 260;
+          const botBoxX = (W - botBoxW) / 2;
+          const botBoxY = cH - 280;
 
-          drawRoundedRect(ctx, contactBoxX, contactBoxY, contactBoxW, contactBoxH, 20);
-          ctx.fillStyle = "rgba(255, 255, 255, 0.05)";
-          ctx.fill();
-          ctx.strokeStyle = "rgba(39, 107, 36, 0.6)";
-          ctx.lineWidth = 2;
+          drawRoundedRect(ctx, botBoxX, botBoxY, botBoxW, botBoxH, 24);
+          ctx.strokeStyle = C_VERDE;
+          ctx.lineWidth = 3;
           ctx.stroke();
 
-          ctx.fillStyle = "#D5A52B";
+          ctx.fillStyle = C_AMARILLO;
+          ctx.font = "800 20px Inter, Arial, sans-serif";
+          ctx.fillText("ATENCIÓN COMERCIAL Y COTIZACIONES", W / 2, botBoxY + 55);
+
+          ctx.fillStyle = C_BLANCO;
+          ctx.font = "900 40px Inter, Arial, sans-serif";
+          ctx.fillText(`WhatsApp +${String(config.whatsapp).replace(/\D/g, '')}`, W / 2, botBoxY + 115);
+
+          ctx.fillStyle = "#CBD5E1";
+          ctx.font = "500 20px Inter, Arial, sans-serif";
+          ctx.fillText(config.address, W / 2, botBoxY + 165);
+
+          ctx.fillStyle = C_AZUL;
           ctx.font = "800 22px Inter, Arial, sans-serif";
-          ctx.fillText("ATENCIÓN COMERCIAL Y COTIZACIONES INMEDIATAS", W / 2, contactBoxY + 55);
+          ctx.fillText("ENVÍOS A TODO NICARAGUA", W / 2, botBoxY + 215);
 
-          ctx.fillStyle = "#FFFFFF";
-          ctx.font = "900 36px Inter, Arial, sans-serif";
-          ctx.fillText(`WhatsApp / Teléfono: ${config.phoneDisplay}`, W / 2, contactBoxY + 115);
-
-          ctx.fillStyle = "#E5E7EB";
-          ctx.font = "500 22px Inter, Arial, sans-serif";
-          ctx.fillText(config.address, W / 2, contactBoxY + 165);
-
-          ctx.fillStyle = "#20B9EF";
-          ctx.font = "800 22px Inter, Arial, sans-serif";
-          ctx.fillText("🚚 ENVÍOS A TODOS LOS DEPARTAMENTOS DE NICARAGUA", W / 2, contactBoxY + 215);
-
+          ctx.restore();
           ctx.textAlign = "left";
 
-          doc.addImage(coverCanvas.toDataURL("image/jpeg", 0.92), "JPEG", 0, 0, 210, 297);
+          doc.addImage(coverCanvas.toDataURL("image/jpeg", 0.94), "JPEG", 0, 0, 210, 297);
           currentPageNum++;
         }
 
-        // ==========================================
-        // 2. PÁGINAS DE PRODUCTOS (3 POR PÁGINA)
-        // ==========================================
+        // =====================================================================
+        // 2. PÁGINAS INTERIORES DE PRODUCTOS (3 POR PÁGINA - SEGÚN PÁG 4)
+        // =====================================================================
         for (let cIdx = 0; cIdx < categoryNames.length; cIdx++) {
           const catName = categoryNames[cIdx];
           const catProds = categoriesMap[catName];
+          const catObj = categories.find(c => c.nombre === catName);
+          const catSubtitle = catObj && catObj.desc ? catObj.desc.toUpperCase() : "EQUIPOS Y MAQUINARIA ESPECIALIZADA";
+
           const chunks = [];
           for (let i = 0; i < catProds.length; i += 3) {
             chunks.push(catProds.slice(i, i + 3));
@@ -2570,215 +2593,349 @@
             const ctx = pageCanvas.getContext("2d");
 
             // Fondo blanco puro
-            ctx.fillStyle = "#FFFFFF";
+            ctx.fillStyle = C_BLANCO;
             ctx.fillRect(0, 0, W, H);
 
-            // A. LISTÓN ROJO LATERAL IZQUIERDO CON NÚMERO DE PÁGINA (ESTILO EJEMPLO)
-            const ribbonX = 50;
-            const ribbonY = 40;
-            const ribbonW = 90;
-            const ribbonH = 145;
-            const notchH = 26;
+            // A. ENCABEZADO DE SECCIÓN CON NÚMERO ROJO Y BANNER AZUL MARINO
+            const headY = 60;
+            const headH = 80;
+            const redW = 95;
+            const navyW = W - 120 - redW;
 
-            ctx.beginPath();
-            ctx.moveTo(ribbonX, ribbonY);
-            ctx.lineTo(ribbonX + ribbonW, ribbonY);
-            ctx.lineTo(ribbonX + ribbonW, ribbonY + ribbonH);
-            ctx.lineTo(ribbonX + ribbonW / 2, ribbonY + ribbonH - notchH);
-            ctx.lineTo(ribbonX, ribbonY + ribbonH);
-            ctx.closePath();
-            ctx.fillStyle = "#DC2626"; // Rojo vivo
+            // Recuadro Rojo a la izquierda (#D9272E)
+            ctx.save();
+            drawRoundedRect(ctx, 60, headY, redW, headH, 12);
+            ctx.fillStyle = C_ROJO;
             ctx.fill();
 
-            // Número en el listón
-            ctx.fillStyle = "#FFFFFF";
-            ctx.font = "900 56px Inter, Arial, sans-serif";
+            // Número de sección formateado (ej. 01, 02, 03)
+            ctx.fillStyle = C_BLANCO;
+            ctx.font = "900 42px Inter, Arial, sans-serif";
             ctx.textAlign = "center";
-            ctx.fillText(String(currentPageNum), ribbonX + ribbonW / 2, ribbonY + 75);
+            ctx.fillText(String(interiorSectionIndex).padStart(2, "0"), 60 + redW / 2, headY + 56);
+            ctx.restore();
+
+            // Banner Azul Marino (#14213B) a la derecha
+            ctx.save();
+            drawRoundedRect(ctx, 60 + redW, headY, navyW, headH, 12);
+            ctx.fillStyle = C_MARINO;
+            ctx.fill();
+
+            // Nombre de la categoría
+            ctx.fillStyle = C_BLANCO;
+            ctx.font = "900 32px Inter, Arial, sans-serif";
             ctx.textAlign = "left";
+            ctx.fillText(catName.toUpperCase(), 60 + redW + 28, headY + 54);
+            ctx.restore();
 
-            // B. BANNER SUPERIOR AZUL OSCURO / INDUSTRIAL (#0F1E36)
-            const bannerX = 145;
-            const bannerY = 40;
-            const bannerW = W - bannerX - 50;
-            const bannerH = 110;
+            // Línea verde maquinaria inferior (#2F713B)
+            ctx.fillStyle = C_VERDE;
+            ctx.fillRect(60, headY + headH - 4, W - 120, 6);
 
-            ctx.fillStyle = "#0F1E36"; // Azul Marino profundo
-            ctx.fillRect(bannerX, bannerY, bannerW, bannerH);
+            // Subtítulo de categoría debajo del encabezado
+            ctx.fillStyle = "#64748B";
+            ctx.font = "800 17px Inter, Arial, sans-serif";
+            ctx.fillText(catSubtitle, 60, headY + headH + 34);
 
-            // Borde verde inferior del banner (#276B24)
-            ctx.fillStyle = "#276B24";
-            ctx.fillRect(bannerX, bannerY + bannerH - 6, bannerW, 6);
-
-            // Nombre de Categoría
-            ctx.fillStyle = "#FFFFFF";
-            ctx.font = "900 34px Inter, Arial, sans-serif";
-            const cleanCatTitle = catName.toUpperCase();
-            ctx.fillText(cleanCatTitle, bannerX + 28, bannerY + 68);
-
-            // Tres estrellas blancas a la derecha
-            ctx.fillStyle = "#FFFFFF";
-            ctx.font = "700 30px Arial, sans-serif";
-            ctx.textAlign = "right";
-            ctx.fillText("★ ★ ★", W - 78, bannerY + 66);
-            ctx.textAlign = "left";
-
-            // C. RENDERIZAR HASTA 3 EQUIPOS EN LA PÁGINA
-            const startY = 220;
-            const itemH = 460;
+            // B. TRES TARJETAS HORIZONTALES APILADAS DE PRODUCTOS
+            const startCardsY = 205;
+            const cardH = 435;
+            const cardGap = 25;
+            const interactiveLinks = [];
 
             for (let pIdx = 0; pIdx < pageProds.length; pIdx++) {
               const p = pageProds[pIdx];
-              const itemY = startY + pIdx * itemH;
+              const cardY = startCardsY + pIdx * (cardH + cardGap);
+              const cardW = W - 120;
 
-              // 1. COLUMNA IZQUIERDA: ESPECIFICACIONES TÉCNICAS
-              const leftX = 70;
-              const leftW = 560;
-
-              // Marca en rojo oscuro (#991B1B)
-              const brandText = `MARCA: ${(p.marca || 'CARCASA').toUpperCase()}`;
-              ctx.fillStyle = "#991B1B";
-              ctx.font = "800 24px Inter, Arial, sans-serif";
-              ctx.fillText(brandText, leftX, itemY + 36);
-
-              // Nombre / Modelo del equipo
-              ctx.fillStyle = "#171A18";
-              ctx.font = "800 24px Inter, Arial, sans-serif";
-              const titleLines = wrapCanvasText(ctx, p.nombre, leftW, 2);
-              let titleCursorY = itemY + 70;
-              titleLines.forEach(tl => {
-                ctx.fillText(tl, leftX, titleCursorY);
-                titleCursorY += 32;
-              });
-
-              // Lista de especificaciones con líneas divisorias (estilo Canva)
-              const specsList = (p.specs && p.specs.length > 0)
-                ? p.specs.slice(0, 4)
-                : ["Excelente rendimiento de trabajo", "Construcción reforzada para uso continuo", "Garantía y respaldo técnico"];
-
-              let specCursorY = Math.max(titleCursorY + 12, itemY + 145);
-              const specRowHeight = 48;
-
-              specsList.forEach((spLine, sIdx) => {
-                // Línea divisoria superior
-                ctx.beginPath();
-                ctx.moveTo(leftX, specCursorY - 26);
-                ctx.lineTo(leftX + leftW - 30, specCursorY - 26);
-                ctx.strokeStyle = "#E5E7EB";
-                ctx.lineWidth = 1.5;
-                ctx.stroke();
-
-                const parts = spLine.split(":");
-                if (parts.length > 1) {
-                  const lbl = parts[0].trim();
-                  const val = parts.slice(1).join(":").trim();
-                  ctx.fillStyle = "#171A18";
-                  ctx.font = "800 22px Inter, Arial, sans-serif";
-                  ctx.fillText(`${lbl}:`, leftX, specCursorY);
-
-                  const lblW = ctx.measureText(`${lbl}: `).width;
-                  ctx.font = "600 22px Inter, Arial, sans-serif";
-                  ctx.fillText(val, leftX + lblW, specCursorY);
-                } else {
-                  ctx.fillStyle = "#374151";
-                  ctx.font = "600 22px Inter, Arial, sans-serif";
-                  ctx.fillText(spLine, leftX, specCursorY);
-                }
-
-                specCursorY += specRowHeight;
-              });
-
-              // Línea divisoria final de specs
-              ctx.beginPath();
-              ctx.moveTo(leftX, specCursorY - 26);
-              ctx.lineTo(leftX + leftW - 30, specCursorY - 26);
-              ctx.strokeStyle = "#E5E7EB";
-              ctx.lineWidth = 1.5;
+              // Contenedor de la tarjeta con borde suave (#E2E8F0)
+              drawRoundedRect(ctx, 60, cardY, cardW, cardH, 16);
+              ctx.fillStyle = C_BLANCO;
+              ctx.fill();
+              ctx.strokeStyle = C_GRIS_BORDE;
+              ctx.lineWidth = 2;
               ctx.stroke();
 
-              // Mostrar precio si está habilitado y tiene precio
-              const formattedPrice = formatProductPrice(p);
-              if (includePrices && formattedPrice) {
-                ctx.fillStyle = "#276B24";
-                ctx.font = "900 26px Inter, Arial, sans-serif";
-                ctx.fillText(`Precio Ref: ${formattedPrice}`, leftX, specCursorY + 10);
-              }
+              // 1. Fotografía grande a la izquierda en contenedor gris claro (#F8FAFC)
+              const photoBoxX = 85;
+              const photoBoxY = cardY + 25;
+              const photoBoxW = 360;
+              const photoBoxH = cardH - 50;
 
-              // 2. COLUMNA DERECHA: FOTOGRAFÍA DEL PRODUCTO
-              const imgBoxX = 660;
-              const imgBoxY = itemY + 20;
-              const imgBoxW = 500;
-              const imgBoxH = 380;
+              drawRoundedRect(ctx, photoBoxX, photoBoxY, photoBoxW, photoBoxH, 14);
+              ctx.fillStyle = C_GRIS_FONDO;
+              ctx.fill();
+              ctx.strokeStyle = "#EDF2F7";
+              ctx.lineWidth = 1;
+              ctx.stroke();
 
               const mainImgUrl = (p.imagenes && p.imagenes.length) ? p.imagenes[0] : "";
               const prodImg = await loadSafeImage(mainImgUrl);
 
               if (prodImg) {
-                const scale = Math.min(imgBoxW / prodImg.naturalWidth, imgBoxH / prodImg.naturalHeight);
-                const drawW = prodImg.naturalWidth * scale;
-                const drawH = prodImg.naturalHeight * scale;
-                const offX = imgBoxX + (imgBoxW - drawW) / 2;
-                const offY = imgBoxY + (imgBoxH - drawH) / 2;
+                const maxImgW = photoBoxW - 30;
+                const maxImgH = photoBoxH - 30;
+                const sc = Math.min(maxImgW / prodImg.naturalWidth, maxImgH / prodImg.naturalHeight);
+                const dw = prodImg.naturalWidth * sc;
+                const dh = prodImg.naturalHeight * sc;
+                const offX = photoBoxX + (photoBoxW - dw) / 2;
+                const offY = photoBoxY + (photoBoxH - dh) / 2;
 
                 ctx.save();
-                drawRoundedRect(ctx, offX, offY, drawW, drawH, 16);
+                drawRoundedRect(ctx, offX, offY, dw, dh, 10);
                 ctx.clip();
-                ctx.drawImage(prodImg, offX, offY, drawW, drawH);
+                ctx.drawImage(prodImg, offX, offY, dw, dh);
                 ctx.restore();
               } else {
-                drawRoundedRect(ctx, imgBoxX + 40, imgBoxY + 30, imgBoxW - 80, imgBoxH - 60, 16);
-                ctx.fillStyle = "#F1F3F1";
-                ctx.fill();
-                ctx.fillStyle = "#9CA3AF";
-                ctx.font = "700 22px Inter, Arial, sans-serif";
+                ctx.fillStyle = "#94A3B8";
+                ctx.font = "800 20px Inter, Arial, sans-serif";
                 ctx.textAlign = "center";
-                ctx.fillText("CARCASA JINOTEGA", imgBoxX + imgBoxW / 2, imgBoxY + imgBoxH / 2);
+                ctx.fillText("FOTO DEL EQUIPO", photoBoxX + photoBoxW / 2, photoBoxY + photoBoxH / 2);
                 ctx.textAlign = "left";
               }
 
-              // Separador sutil entre productos
-              if (pIdx < pageProds.length - 1) {
-                ctx.beginPath();
-                ctx.moveTo(70, itemY + itemH - 15);
-                ctx.lineTo(W - 70, itemY + itemH - 15);
-                ctx.strokeStyle = "#F3F4F6";
-                ctx.lineWidth = 2;
-                ctx.stroke();
+              // 2. Columna derecha: Detalles y especificaciones técnicas
+              const infoX = 480;
+              const infoW = cardW - 440;
+
+              // MARCA • MODELO
+              const brandModelText = [p.marca || "CARCASA", p.modelo].filter(Boolean).join(" • ").toUpperCase();
+              ctx.fillStyle = "#64748B";
+              ctx.font = "800 18px Inter, Arial, sans-serif";
+              ctx.fillText(brandModelText, infoX, cardY + 54);
+
+              // Nombre del Producto
+              ctx.fillStyle = C_CARBON;
+              ctx.font = "900 26px Inter, Arial, sans-serif";
+              const titleLines = wrapCanvasText(ctx, p.nombre, infoW - 40, 2);
+              let titleY = cardY + 88;
+              titleLines.forEach(line => {
+                ctx.fillText(line, infoX, titleY);
+                titleY += 32;
+              });
+
+              // Línea separadora fina bajo el título
+              const divY = Math.max(titleY + 8, cardY + 145);
+              ctx.beginPath();
+              ctx.moveTo(infoX, divY);
+              ctx.lineTo(infoX + infoW - 20, divY);
+              ctx.strokeStyle = C_GRIS_BORDE;
+              ctx.lineWidth = 1.5;
+              ctx.stroke();
+
+              // Especificaciones técnicas (3 a 4 líneas limpias)
+              const specsList = (p.specs && p.specs.length > 0)
+                ? p.specs.slice(0, 4)
+                : ["Motor / combustible: Alto rendimiento", "Caudal / capacidad: Trabajo continuo", "Aplicación / uso: Agrícola e industrial"];
+
+              let specY = divY + 36;
+              const specRowGap = 36;
+
+              specsList.forEach(sp => {
+                const parts = sp.split(":");
+                if (parts.length > 1) {
+                  const lbl = `${parts[0].trim()}:`;
+                  const val = parts.slice(1).join(":").trim();
+
+                  ctx.fillStyle = C_CARBON;
+                  ctx.font = "800 20px Inter, Arial, sans-serif";
+                  ctx.fillText(lbl, infoX, specY);
+
+                  const lblW = ctx.measureText(`${lbl} `).width;
+                  ctx.fillStyle = "#475569";
+                  ctx.font = "500 20px Inter, Arial, sans-serif";
+                  ctx.fillText(val, infoX + lblW, specY);
+                } else {
+                  ctx.fillStyle = "#475569";
+                  ctx.font = "500 20px Inter, Arial, sans-serif";
+                  ctx.fillText(sp, infoX, specY);
+                }
+                specY += specRowGap;
+              });
+
+              // Fila inferior de la tarjeta: Precio y Botón CONSULTAR
+              const formattedPrice = formatProductPrice(p);
+              const botRowY = cardY + cardH - 38;
+
+              // Precio de referencia a la izquierda
+              if (includePrices && formattedPrice) {
+                ctx.fillStyle = "#64748B";
+                ctx.font = "600 20px Inter, Arial, sans-serif";
+                ctx.fillText("Precio de referencia: ", infoX, botRowY);
+
+                const prefW = ctx.measureText("Precio de referencia: ").width;
+                ctx.fillStyle = C_VERDE;
+                ctx.font = "900 24px Inter, Arial, sans-serif";
+                ctx.fillText(formattedPrice, infoX + prefW, botRowY);
               }
+
+              // Botón visual verde «CONSULTAR» a la derecha
+              const btnW = 200, btnH = 50;
+              const btnX = 60 + cardW - btnW - 30;
+              const btnY = cardY + cardH - btnH - 24;
+
+              drawRoundedRect(ctx, btnX, btnY, btnW, btnH, 10);
+              ctx.fillStyle = C_VERDE;
+              ctx.fill();
+
+              ctx.fillStyle = C_BLANCO;
+              ctx.font = "900 18px Inter, Arial, sans-serif";
+              ctx.textAlign = "center";
+              ctx.fillText("CONSULTAR", btnX + btnW / 2, btnY + 32);
+              ctx.textAlign = "left";
+
+              // Registrar hotspot de enlace interactivo a WhatsApp para jsPDF
+              const waLink = buildClientWhatsAppUrl(p);
+              interactiveLinks.push({
+                x: btnX * scaleX,
+                y: btnY * scaleY,
+                w: btnW * scaleX,
+                h: btnH * scaleY,
+                url: waLink
+              });
             }
 
-            // D. PIE DE PÁGINA CORPORATIVO
-            const footerY = H - 90;
+            // C. PIE DE PÁGINA CORPORATIVO CONSISTENTE
+            const footY = H - 85;
+            ctx.beginPath();
+            ctx.moveTo(60, footY - 20);
+            ctx.lineTo(W - 60, footY - 20);
+            ctx.strokeStyle = C_GRIS_BORDE;
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
 
-            // Línea verde superior de pie
-            ctx.fillStyle = "#276B24";
-            ctx.fillRect(50, footerY - 15, W - 100, 3);
+            // Izquierda
+            ctx.fillStyle = C_CARBON;
+            ctx.font = "800 18px Inter, Arial, sans-serif";
+            ctx.fillText(`CARCASA JINOTEGA  •  WhatsApp: ${config.phoneDisplay}`, 60, footY + 10);
 
-            ctx.fillStyle = "#171A18";
-            ctx.font = "800 20px Inter, Arial, sans-serif";
-            ctx.fillText(`CARCASA JINOTEGA  •  WhatsApp / Ventas: ${config.phoneDisplay}`, 50, footerY + 20);
-
-            ctx.fillStyle = "#6B7280";
-            ctx.font = "600 18px Inter, Arial, sans-serif";
-            ctx.fillText(`${config.address}  •  Envíos a todo Nicaragua`, 50, footerY + 50);
-
+            // Derecha
             ctx.textAlign = "right";
-            ctx.fillStyle = "#171A18";
-            ctx.font = "700 20px Inter, Arial, sans-serif";
-            ctx.fillText(`Página ${currentPageNum} de ${totalPages}`, W - 50, footerY + 35);
+            ctx.fillStyle = "#64748B";
+            ctx.font = "600 18px Inter, Arial, sans-serif";
+            ctx.fillText(`Página ${currentPageNum} de ${totalPages}`, W - 60, footY + 10);
             ctx.textAlign = "left";
 
             if (doc.getNumberOfPages() > 0 && (includeCover || currentPageNum > 1)) {
               doc.addPage();
             }
-            doc.addImage(pageCanvas.toDataURL("image/jpeg", 0.92), "JPEG", 0, 0, 210, 297);
+            doc.addImage(pageCanvas.toDataURL("image/jpeg", 0.94), "JPEG", 0, 0, 210, 297);
+
+            // Añadir enlaces interactivos clicables de WhatsApp a los botones CONSULTAR
+            interactiveLinks.forEach(lnk => {
+              doc.link(lnk.x, lnk.y, lnk.w, lnk.h, { url: lnk.url });
+            });
+
             currentPageNum++;
+            interiorSectionIndex++;
           }
         }
 
-        // ==========================================
-        // 3. GENERACIÓN DEL ARCHIVO BLOB Y ENLACE
-        // ==========================================
+        // =====================================================================
+        // 3. PÁGINA DE CIERRE INSTITUCIONAL (SEGÚN GUÍA VISUAL - PÁG 6)
+        // =====================================================================
+        if (includeClosing) {
+          updatePdfProgressText(`Generando página de cierre (Página ${currentPageNum} de ${totalPages})...`);
+          const closeCanvas = document.createElement("canvas");
+          closeCanvas.width = W;
+          closeCanvas.height = H;
+          const ctx = closeCanvas.getContext("2d");
+
+          // Fondo blanco exterior
+          ctx.fillStyle = C_BLANCO;
+          ctx.fillRect(0, 0, W, H);
+
+          // Contenedor principal Carbón (#111A18)
+          const cX = 60, cY = 60, cW = W - 120, cH = H - 120;
+          ctx.save();
+          drawRoundedRect(ctx, cX, cY, cW, cH, 20);
+          ctx.clip();
+
+          ctx.fillStyle = C_CARBON;
+          ctx.fillRect(cX, cY, cW, cH);
+
+          // Barra superior amarilla (#E6B82E)
+          ctx.fillStyle = C_AMARILLO;
+          ctx.fillRect(cX, cY, cW, 26);
+
+          // Títulos de cierre
+          ctx.fillStyle = C_BLANCO;
+          ctx.font = "900 58px Inter, Arial, sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillText("TRABAJEMOS JUNTOS", W / 2, cY + 280);
+
+          ctx.fillStyle = C_AZUL;
+          ctx.font = "800 24px Inter, Arial, sans-serif";
+          ctx.fillText("EL EQUIPO ADECUADO HACE LA DIFERENCIA", W / 2, cY + 345);
+
+          ctx.fillStyle = "#94A3B8";
+          ctx.font = "500 22px Inter, Arial, sans-serif";
+          ctx.fillText("Asesoría técnica • Repuestos • Envíos nacionales", W / 2, cY + 410);
+
+          // Bloque verde central de cotización
+          const boxW = 860, boxH = 250;
+          const boxX = (W - boxW) / 2;
+          const boxY = cY + 500;
+
+          drawRoundedRect(ctx, boxX, boxY, boxW, boxH, 24);
+          ctx.strokeStyle = C_VERDE;
+          ctx.lineWidth = 3;
+          ctx.stroke();
+
+          ctx.fillStyle = C_AMARILLO;
+          ctx.font = "800 20px Inter, Arial, sans-serif";
+          ctx.fillText("COTIZA DIRECTAMENTE CON NUESTRO EQUIPO", W / 2, boxY + 55);
+
+          ctx.fillStyle = C_BLANCO;
+          ctx.font = "900 48px Inter, Arial, sans-serif";
+          ctx.fillText(`+${String(config.whatsapp).replace(/\D/g, '')}`, W / 2, boxY + 125);
+
+          ctx.fillStyle = C_AZUL;
+          ctx.font = "800 22px Inter, Arial, sans-serif";
+          ctx.fillText("WHATSAPP • RESPUESTA PERSONALIZADA", W / 2, boxY + 185);
+
+          // Datos institucionales
+          ctx.fillStyle = C_BLANCO;
+          ctx.font = "900 30px Inter, Arial, sans-serif";
+          ctx.fillText("CARCASA JINOTEGA", W / 2, cY + 870);
+
+          ctx.fillStyle = "#CBD5E1";
+          ctx.font = "500 22px Inter, Arial, sans-serif";
+          ctx.fillText(config.address, W / 2, cY + 920);
+
+          ctx.fillStyle = "#94A3B8";
+          ctx.font = "500 22px Inter, Arial, sans-serif";
+          ctx.fillText(config.email, W / 2, cY + 965);
+
+          // Píldora inferior "ENVÍOS A TODO NICARAGUA"
+          const pillW = 380, pillH = 68;
+          const pillX = (W - pillW) / 2;
+          const pillY = cH - 140;
+
+          drawRoundedRect(ctx, pillX, pillY, pillW, pillH, 34);
+          ctx.fillStyle = C_VERDE;
+          ctx.fill();
+
+          ctx.fillStyle = C_BLANCO;
+          ctx.font = "800 22px Inter, Arial, sans-serif";
+          ctx.fillText("ENVÍOS A TODO NICARAGUA", W / 2, pillY + 43);
+
+          ctx.restore();
+          ctx.textAlign = "left";
+
+          doc.addPage();
+          doc.addImage(closeCanvas.toDataURL("image/jpeg", 0.94), "JPEG", 0, 0, 210, 297);
+
+          // Enlace interactivo en la página de cierre hacia WhatsApp
+          const cleanWa = String(config.whatsapp).replace(/\D/g, '');
+          const waBoxLink = `https://wa.me/${cleanWa}?text=${encodeURIComponent("Hola, CARCASA Jinotega. Quisiera cotizar equipos de su catálogo.")}`;
+          doc.link(boxX * scaleX, boxY * scaleY, boxW * scaleX, boxH * scaleY, { url: waBoxLink });
+          doc.link(pillX * scaleX, pillY * scaleY, pillW * scaleX, pillH * scaleY, { url: waBoxLink });
+        }
+
+        // =====================================================================
+        // 4. GENERACIÓN DEL ARCHIVO BLOB Y ENLACE
+        // =====================================================================
         updatePdfProgressText("Generando archivo PDF y enlace de visualización...");
         const pdfBlob = doc.output("blob");
         const localBlobUrl = URL.createObjectURL(pdfBlob);
