@@ -1,0 +1,2549 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CARCASA Jinotega | Catálogo Digital de Maquinaria y Equipos</title>
+  <meta name="description" content="Catálogo digital de maquinaria agrícola, equipos industriales, motores, generadores, motobombas, herramientas y repuestos en Jinotega, Nicaragua. Envíos a todo el país.">
+  <link rel="icon" type="image/jpeg" href="assets/images/logo.jpg">
+  
+  <!-- Tailwind CSS & Lucide Icons -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Supabase JS Client v2 -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
+  <!-- Tipografía Inter (Google Fonts) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            carcasa: {
+              green: '#276B24',
+              greenDark: '#1D521B',
+              black: '#171A18',
+              white: '#FFFFFF',
+              gray: '#F1F3F1',
+              gold: '#D5A52B',
+              blue: '#20B9EF',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  
+  <style>
+    body { background-color: #F1F3F1; color: #171A18; }
+    .line-clamp-2 {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+<body class="antialiased selection:bg-carcasa-green selection:text-white">
+
+  <!-- ===================================================================== -->
+  <!-- BARRA SUPERIOR CORPORATIVA                                            -->
+  <!-- ===================================================================== -->
+  <div class="bg-carcasa-black text-white text-xs border-b border-white/10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-1.5 flex flex-wrap justify-between items-center gap-2">
+      <div class="flex items-center gap-4 text-gray-300">
+        <span class="flex items-center gap-1.5">
+          <i data-lucide="map-pin" class="w-3.5 h-3.5 text-carcasa-gold"></i>
+          <span id="topAddress">Frente a Gasolinera Puma Apanás, Jinotega</span>
+        </span>
+        <span class="hidden md:inline text-white/20">|</span>
+        <span class="hidden md:flex items-center gap-1.5">
+          <i data-lucide="truck" class="w-3.5 h-3.5 text-carcasa-blue"></i>
+          <span>Envíos a todo Nicaragua</span>
+        </span>
+      </div>
+      <div class="flex items-center gap-3">
+        <span id="topSchedule" class="hidden sm:inline text-gray-400">Lunes a Sábado: 8:00 AM - 5:30 PM</span>
+        <button id="adminBadgeTop" onclick="openAdminPanel('productos')" class="hidden items-center gap-1.5 bg-carcasa-gold text-carcasa-black font-extrabold px-2.5 py-0.5 rounded text-[11px] hover:brightness-105 transition">
+          <i data-lucide="shield-check" class="w-3.5 h-3.5"></i> PANEL ADMIN
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- A. ENCABEZADO PRINCIPAL (NAVBAR)                                       -->
+  <!-- ===================================================================== -->
+  <header class="bg-carcasa-white sticky top-0 z-40 border-b border-gray-200 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-16 sm:h-20 gap-3">
+        
+        <!-- Logotipo Oficial CARCASA -->
+        <a href="#catalogo" onclick="resetFilters()" class="flex items-center gap-3 shrink-0">
+          <div class="relative h-12 w-12 sm:h-14 sm:w-14 rounded-xl bg-white flex items-center justify-center overflow-hidden border-2 border-carcasa-green shadow-sm p-0.5">
+            <img src="assets/images/logo.jpg" alt="Logo CARCASA Jinotega" class="h-full w-full object-contain">
+          </div>
+          <div>
+            <div class="flex items-center gap-1.5">
+              <span class="text-xl sm:text-2xl font-black tracking-tight text-carcasa-black">CARCASA</span>
+              <span class="h-2 w-2 rounded-full bg-carcasa-green"></span>
+            </div>
+            <span class="block text-[10px] sm:text-[11px] font-bold uppercase tracking-widest text-carcasa-green -mt-1">Jinotega • Nicaragua</span>
+          </div>
+        </a>
+
+        <!-- Buscador rápido en Header (Escritorio) -->
+        <div class="hidden md:flex flex-1 max-w-md relative">
+          <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3.5 top-3"></i>
+          <input type="text" id="headerSearchInput" oninput="syncSearch(this.value)" placeholder="Buscar por nombre, marca, modelo o código..." 
+                 class="w-full pl-10 pr-4 py-2 text-sm bg-carcasa-gray border border-gray-200 rounded-lg focus:outline-none focus:bg-white focus:border-carcasa-green transition">
+        </div>
+
+        <!-- Navegación Escritorio -->
+        <nav class="hidden lg:flex items-center gap-6 text-sm font-semibold text-carcasa-black">
+          <a href="#catalogo" class="text-carcasa-green border-b-2 border-carcasa-green py-1">Catálogo</a>
+          <a href="#categorias" class="hover:text-carcasa-green transition py-1">Categorías</a>
+          <a href="#nosotros" class="hover:text-carcasa-green transition py-1">Nosotros</a>
+          <a href="#servicios" class="hover:text-carcasa-green transition py-1">Servicios</a>
+          <a href="#contacto" class="hover:text-carcasa-green transition py-1">Contacto</a>
+        </nav>
+
+        <!-- Botón WhatsApp + Acceso Rápido Admin + Menú Móvil -->
+        <div class="flex items-center gap-2 shrink-0">
+          <button id="headerAdminAddBtn" onclick="openAdminPanel('productos', true)" 
+                  class="hidden items-center gap-1.5 bg-carcasa-black text-carcasa-gold hover:bg-black text-xs font-bold px-3.5 py-2.5 rounded-lg transition shadow-sm">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            <span class="hidden sm:inline">Nuevo Equipo</span>
+          </button>
+
+          <a id="headerWhatsappBtn" href="https://wa.me/50557079297" target="_blank"
+             class="inline-flex items-center gap-2 bg-carcasa-green hover:bg-carcasa-greenDark text-white text-xs sm:text-sm font-bold px-3.5 sm:px-4 py-2.5 rounded-lg transition shadow-sm">
+            <i data-lucide="message-circle" class="w-4 h-4"></i>
+            <span>WhatsApp</span>
+          </a>
+
+          <button onclick="toggleMobileMenu()" aria-label="Abrir menú" class="lg:hidden p-2 rounded-lg text-carcasa-black hover:bg-carcasa-gray border border-gray-200">
+            <i data-lucide="menu" class="w-5 h-5"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Menú Móvil Desplegable -->
+    <div id="mobileMenu" class="hidden lg:hidden bg-white border-t border-gray-200 px-4 pt-3 pb-5 space-y-2 shadow-lg">
+      <div class="relative mb-3">
+        <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3 top-2.5"></i>
+        <input type="text" oninput="syncSearch(this.value)" placeholder="Buscar en el catálogo..." 
+               class="w-full pl-9 pr-3 py-2 text-xs bg-carcasa-gray border border-gray-200 rounded-lg focus:outline-none focus:border-carcasa-green">
+      </div>
+      <a href="#catalogo" onclick="toggleMobileMenu()" class="block px-3 py-2 rounded-lg font-bold text-carcasa-green bg-carcasa-gray">Catálogo de Equipos</a>
+      <a href="#categorias" onclick="toggleMobileMenu()" class="block px-3 py-2 rounded-lg font-semibold text-carcasa-black hover:bg-carcasa-gray">Categorías</a>
+      <a href="#nosotros" onclick="toggleMobileMenu()" class="block px-3 py-2 rounded-lg font-semibold text-carcasa-black hover:bg-carcasa-gray">Conoce CARCASA</a>
+      <a href="#servicios" onclick="toggleMobileMenu()" class="block px-3 py-2 rounded-lg font-semibold text-carcasa-black hover:bg-carcasa-gray">Servicios y Envíos</a>
+      <a href="#contacto" onclick="toggleMobileMenu()" class="block px-3 py-2 rounded-lg font-semibold text-carcasa-black hover:bg-carcasa-gray">Ubicación y Contacto</a>
+      <div class="pt-2 border-t border-gray-100 flex justify-between items-center text-xs">
+        <span class="text-gray-500">Gestión interna</span>
+        <button onclick="toggleMobileMenu(); handleAdminAccess();" class="text-carcasa-green font-bold">Panel Administrador</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===================================================================== -->
+  <!-- B. PORTADA COMERCIAL COMPACTA (CATÁLOGO INMEDIATAMENTE VISIBLE)       -->
+  <!-- ===================================================================== -->
+  <section id="inicio" class="relative bg-carcasa-black text-white overflow-hidden border-b-4 border-carcasa-green">
+    <div class="absolute inset-0">
+      <img src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1920&q=80" 
+           alt="Maquinaria agrícola e industrial CARCASA" 
+           class="w-full h-full object-cover object-center opacity-30">
+      <div class="absolute inset-0 bg-gradient-to-r from-carcasa-black via-carcasa-black/95 to-carcasa-black/75"></div>
+    </div>
+
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-7 sm:py-9 flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+      <div class="max-w-2xl">
+        <div class="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-carcasa-gold mb-1.5">
+          <span class="w-2 h-2 rounded-full bg-carcasa-green"></span>
+          <span>Catálogo Digital Interactivo • Cotización Inmediata</span>
+        </div>
+        <h1 id="heroTitle" class="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight leading-tight text-white">
+          Maquinaria, equipos y soluciones para impulsar tu trabajo.
+        </h1>
+        <p id="heroSubtitle" class="text-xs sm:text-sm text-gray-300 mt-1.5 leading-relaxed">
+          Encuentra maquinaria agrícola, equipos industriales, herramientas y repuestos con asesoramiento técnico especializado en Jinotega.
+        </p>
+      </div>
+
+      <div class="flex flex-wrap sm:flex-nowrap items-center gap-2.5 shrink-0">
+        <a id="heroAdvisorBtn" href="https://wa.me/50557079297?text=Hola%2C%20CARCASA.%20Me%20gustar%C3%ADa%20recibir%20asesoramiento%20t%C3%A9cnico%20sobre%20sus%20equipos." target="_blank"
+           class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-carcasa-green hover:bg-carcasa-greenDark text-white font-bold px-5 py-3 rounded-lg text-xs sm:text-sm transition shadow">
+          <i data-lucide="headset" class="w-4 h-4"></i>
+          <span>Contactar Asesor</span>
+        </a>
+        <button onclick="shareCatalogLink()" 
+                class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white border border-white/20 font-semibold px-4 py-3 rounded-lg text-xs sm:text-sm transition">
+          <i data-lucide="share-2" class="w-4 h-4 text-carcasa-blue"></i>
+          <span>Compartir Catálogo</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================================== -->
+  <!-- C. CATÁLOGO DIGITAL PROTAGONISTA                                      -->
+  <!-- ===================================================================== -->
+  <main id="catalogo" class="py-7 sm:py-10 bg-carcasa-gray border-b border-gray-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <!-- Píldoras de Acceso Rápido por Categoría -->
+      <div class="mb-5">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-[11px] font-extrabold uppercase tracking-wider text-gray-500">Categorías de equipos:</span>
+          <a href="#categorias" class="text-xs font-bold text-carcasa-green hover:underline">Ver todas las categorías</a>
+        </div>
+        <div id="quickCategoryPills" class="flex gap-2 overflow-x-auto no-scrollbar pb-1"></div>
+      </div>
+
+      <!-- Barra de Búsqueda, Filtros y Ordenamiento -->
+      <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm mb-6 space-y-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3">
+          
+          <!-- Buscador -->
+          <div class="lg:col-span-5 relative">
+            <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3.5 top-3"></i>
+            <input type="text" id="searchInput" oninput="syncSearch(this.value)" placeholder="Buscar por nombre, marca, modelo o código..." 
+                   class="w-full pl-10 pr-4 py-2 text-sm bg-carcasa-gray/70 border border-gray-200 rounded-lg focus:outline-none focus:bg-white focus:border-carcasa-green transition">
+          </div>
+
+          <!-- Filtro Categoría -->
+          <div class="lg:col-span-3">
+            <select id="filterCategory" onchange="renderCatalog()" aria-label="Filtrar por categoría"
+                    class="w-full px-3 py-2 text-sm bg-carcasa-gray/70 border border-gray-200 rounded-lg focus:outline-none focus:bg-white focus:border-carcasa-green font-medium">
+              <option value="Todas">Todas las categorías</option>
+            </select>
+          </div>
+
+          <!-- Filtro Marca -->
+          <div class="lg:col-span-2">
+            <select id="filterBrand" onchange="renderCatalog()" aria-label="Filtrar por marca"
+                    class="w-full px-3 py-2 text-sm bg-carcasa-gray/70 border border-gray-200 rounded-lg focus:outline-none focus:bg-white focus:border-carcasa-green font-medium">
+              <option value="Todas">Todas las marcas</option>
+            </select>
+          </div>
+
+          <!-- Ordenamiento -->
+          <div class="lg:col-span-2">
+            <select id="sortOrder" onchange="renderCatalog()" aria-label="Ordenar productos"
+                    class="w-full px-3 py-2 text-sm bg-carcasa-gray/70 border border-gray-200 rounded-lg focus:outline-none focus:bg-white focus:border-carcasa-green font-medium">
+              <option value="recientes">Más recientes</option>
+              <option value="nombre_asc">Alfabético (A - Z)</option>
+              <option value="nombre_desc">Alfabético (Z - A)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Vistas rápidas (Tabs) + Contador y Botón Limpiar -->
+        <div class="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-gray-100">
+          <div class="flex items-center gap-2">
+            <button onclick="setQuickTab('todos')" id="tab-todos" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-carcasa-green text-white transition">
+              Todos los equipos
+            </button>
+            <button onclick="setQuickTab('destacados')" id="tab-destacados" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-carcasa-gray text-carcasa-black hover:bg-gray-200 transition flex items-center gap-1">
+              <i data-lucide="star" class="w-3.5 h-3.5 text-carcasa-gold"></i> Destacados
+            </button>
+          </div>
+
+          <div class="flex items-center gap-4 text-xs">
+            <span id="catalogCounter" class="font-semibold text-gray-600">Cargando equipos...</span>
+            <button id="btnResetFilters" onclick="resetFilters()" class="hidden text-carcasa-green font-bold hover:underline">
+              Limpiar filtros
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- CUADRÍCULA DE TARJETAS DE PRODUCTOS -->
+      <div id="productsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+
+      <!-- Carga progresiva -->
+      <div id="loadMoreWrapper" class="mt-10 text-center hidden">
+        <button onclick="loadMoreProducts()" class="inline-flex items-center gap-2 bg-white hover:bg-gray-50 text-carcasa-black font-bold text-sm px-7 py-3 rounded-xl border border-gray-300 transition shadow-sm">
+          <span>Mostrar más equipos</span>
+          <i data-lucide="chevron-down" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <!-- ===================================================================== -->
+  <!-- D. EXPLORACIÓN VISUAL POR CATEGORÍAS                                  -->
+  <!-- ===================================================================== -->
+  <section id="categorias" class="py-14 lg:py-16 bg-carcasa-white border-b border-gray-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-2">
+        <div>
+          <span class="text-xs font-extrabold uppercase tracking-widest text-carcasa-green">Líneas Especializadas</span>
+          <h2 class="text-2xl font-black text-carcasa-black mt-0.5">Categorías de Productos</h2>
+        </div>
+        <p class="text-xs text-gray-500">Selecciona una categoría para explorar la maquinaria disponible.</p>
+      </div>
+
+      <div id="categoriesGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4"></div>
+    </div>
+  </section>
+
+  <!-- ===================================================================== -->
+  <!-- E. SECCIÓN INSTITUCIONAL ("CONOCE CARCASA")                           -->
+  <!-- ===================================================================== -->
+  <section id="nosotros" class="py-14 lg:py-16 bg-carcasa-gray border-b border-gray-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="bg-white rounded-2xl border border-gray-200 p-6 sm:p-10 shadow-sm grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+        
+        <div class="lg:col-span-5">
+          <div class="relative rounded-xl overflow-hidden bg-carcasa-black h-72 sm:h-80">
+            <img src="https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?auto=format&fit=crop&w=900&q=80" 
+                 alt="Maquinaria y servicio técnico CARCASA Jinotega" 
+                 class="w-full h-full object-cover opacity-90">
+            <div class="absolute bottom-3 left-3 right-3 bg-carcasa-black/90 text-white p-3 rounded-lg border-l-4 border-carcasa-green text-xs">
+              <span class="font-bold text-carcasa-gold block">CARCASA JINOTEGA</span>
+              <span>Frente a Gasolinera Puma Apanás, Jinotega</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-7 space-y-5">
+          <div>
+            <span class="text-xs font-extrabold uppercase tracking-widest text-carcasa-green">Respaldo y Asesoría Técnica</span>
+            <h2 class="text-2xl sm:text-3xl font-black text-carcasa-black mt-1">Conoce CARCASA</h2>
+          </div>
+
+          <p class="text-sm sm:text-base text-gray-700 leading-relaxed">
+            En <strong>CARCASA Jinotega</strong> ofrecemos soluciones integrales en maquinaria agrícola, equipos industriales, motores, generadores, herramientas y repuestos, acompañando a productores, talleres y empresas con asesoramiento técnico especializado y despacho confiable a nivel nacional.
+          </p>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+            <div class="p-3.5 rounded-xl bg-carcasa-gray border border-gray-200">
+              <i data-lucide="user-check" class="w-5 h-5 text-carcasa-green mb-2"></i>
+              <h3 class="font-bold text-xs text-carcasa-black">Atención personalizada</h3>
+              <p class="text-[11px] text-gray-600 mt-1">Evaluamos tu necesidad técnica para recomendarte el equipo exacto.</p>
+            </div>
+            <div class="p-3.5 rounded-xl bg-carcasa-gray border border-gray-200">
+              <i data-lucide="wrench" class="w-5 h-5 text-carcasa-green mb-2"></i>
+              <h3 class="font-bold text-xs text-carcasa-black">Asesoramiento técnico</h3>
+              <p class="text-[11px] text-gray-600 mt-1">Orientación precisa sobre potencia, caudal, voltaje y operación.</p>
+            </div>
+            <div class="p-3.5 rounded-xl bg-carcasa-gray border border-gray-200">
+              <i data-lucide="handshake" class="w-5 h-5 text-carcasa-green mb-2"></i>
+              <h3 class="font-bold text-xs text-carcasa-black">Compromiso y repuestos</h3>
+              <p class="text-[11px] text-gray-600 mt-1">Disponibilidad de piezas y coordinación de envíos a todo Nicaragua.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================================== -->
+  <!-- F. SERVICIOS Y BENEFICIOS                                             -->
+  <!-- ===================================================================== -->
+  <section id="servicios" class="py-14 bg-carcasa-white border-b border-gray-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div class="p-5 rounded-xl bg-carcasa-gray border border-gray-200 flex items-start gap-3.5">
+          <div class="p-2.5 rounded-lg bg-carcasa-green text-white shrink-0">
+            <i data-lucide="cpu" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-sm text-carcasa-black">Asesoramiento técnico</h3>
+            <p class="text-xs text-gray-600 mt-1">Acompañamiento especializado para seleccionar el equipo correcto.</p>
+          </div>
+        </div>
+
+        <div class="p-5 rounded-xl bg-carcasa-gray border border-gray-200 flex items-start gap-3.5">
+          <div class="p-2.5 rounded-lg bg-carcasa-green text-white shrink-0">
+            <i data-lucide="layers" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-sm text-carcasa-black">Variedad de maquinaria</h3>
+            <p class="text-xs text-gray-600 mt-1">Equipos para agro, café, carpintería, construcción y talleres.</p>
+          </div>
+        </div>
+
+        <div class="p-5 rounded-xl bg-carcasa-gray border border-gray-200 flex items-start gap-3.5">
+          <div class="p-2.5 rounded-lg bg-carcasa-green text-white shrink-0">
+            <i data-lucide="settings" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-sm text-carcasa-black">Repuestos y consumibles</h3>
+            <p class="text-xs text-gray-600 mt-1">Accesorios y piezas para mantener tus equipos siempre operativos.</p>
+          </div>
+        </div>
+
+        <div class="p-5 rounded-xl bg-carcasa-gray border border-gray-200 flex items-start gap-3.5">
+          <div class="p-2.5 rounded-lg bg-carcasa-green text-white shrink-0">
+            <i data-lucide="truck" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-sm text-carcasa-black">Envíos a todo Nicaragua</h3>
+            <p class="text-xs text-gray-600 mt-1">Despacho seguro y coordinado desde Jinotega hacia cualquier departamento.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================================== -->
+  <!-- G. CONTACTO Y UBICACIÓN                                               -->
+  <!-- ===================================================================== -->
+  <section id="contacto" class="py-14 bg-carcasa-gray">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <div class="lg:col-span-6 space-y-5">
+          <div>
+            <span class="text-xs font-extrabold uppercase tracking-widest text-carcasa-green">Atención Directa</span>
+            <h2 class="text-2xl font-black text-carcasa-black mt-0.5">Ubicación y Contacto</h2>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+            <div class="p-4 rounded-xl bg-white border border-gray-200 shadow-sm">
+              <span class="font-bold text-carcasa-black flex items-center gap-1.5 mb-1">
+                <i data-lucide="map-pin" class="w-4 h-4 text-carcasa-green"></i> Ubicación
+              </span>
+              <p id="contactAddress" class="text-gray-600">Frente a Gasolinera Puma Apanás, Jinotega, Nicaragua.</p>
+            </div>
+            <div class="p-4 rounded-xl bg-white border border-gray-200 shadow-sm">
+              <span class="font-bold text-carcasa-black flex items-center gap-1.5 mb-1">
+                <i data-lucide="phone" class="w-4 h-4 text-carcasa-green"></i> Teléfono / WhatsApp
+              </span>
+              <a id="contactPhoneLink" href="https://wa.me/50557079297" target="_blank" class="font-bold text-carcasa-green hover:underline">+505 5707-9297</a>
+            </div>
+            <div class="p-4 rounded-xl bg-white border border-gray-200 shadow-sm">
+              <span class="font-bold text-carcasa-black flex items-center gap-1.5 mb-1">
+                <i data-lucide="mail" class="w-4 h-4 text-carcasa-green"></i> Correo Electrónico
+              </span>
+              <p id="contactEmail" class="text-gray-600">ventas@carcasajinotega.com</p>
+            </div>
+            <div class="p-4 rounded-xl bg-white border border-gray-200 shadow-sm">
+              <span class="font-bold text-carcasa-black flex items-center gap-1.5 mb-1">
+                <i data-lucide="clock" class="w-4 h-4 text-carcasa-green"></i> Horario de Atención
+              </span>
+              <p id="contactSchedule" class="text-gray-600">Lunes a Sábado: 8:00 AM - 5:30 PM</p>
+            </div>
+          </div>
+
+          <div class="rounded-xl overflow-hidden border border-gray-200 h-48 bg-white shadow-sm">
+            <iframe title="Ubicación CARCASA Jinotega"
+              src="https://www.openstreetmap.org/export/embed.html?bbox=-86.0120%2C13.0820%2C-85.9920%2C13.1020&layer=mapnik&marker=13.0910%2C-86.0023" 
+              class="w-full h-full border-0">
+            </iframe>
+          </div>
+        </div>
+
+        <div class="lg:col-span-6">
+          <div class="bg-white p-6 sm:p-7 rounded-2xl border border-gray-200 shadow-sm">
+            <h3 class="text-lg font-black text-carcasa-black mb-1">Consultar con un Asesor</h3>
+            <p class="text-xs text-gray-500 mb-4">Envía tu consulta y te atenderemos directamente por WhatsApp.</p>
+
+            <form id="contactForm" class="space-y-3.5 text-sm">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-xs font-bold mb-1">Nombre Completo *</label>
+                  <input type="text" id="contactName" required placeholder="Tu nombre" class="w-full px-3 py-2 bg-carcasa-gray border border-gray-200 rounded-lg focus:outline-none focus:bg-white focus:border-carcasa-green text-xs">
+                </div>
+                <div>
+                  <label class="block text-xs font-bold mb-1">Teléfono / WhatsApp *</label>
+                  <input type="tel" id="contactClientPhone" required placeholder="Ej: 8888-8888" class="w-full px-3 py-2 bg-carcasa-gray border border-gray-200 rounded-lg focus:outline-none focus:bg-white focus:border-carcasa-green text-xs">
+                </div>
+              </div>
+              <div>
+                <label class="block text-xs font-bold mb-1">Equipo de interés o consulta *</label>
+                <textarea id="contactMessage" rows="3" required placeholder="Describe la maquinaria, motobomba, generador o repuesto que necesitas..." class="w-full px-3 py-2 bg-carcasa-gray border border-gray-200 rounded-lg focus:outline-none focus:bg-white focus:border-carcasa-green text-xs"></textarea>
+              </div>
+              <button type="submit" class="w-full flex items-center justify-center gap-2 bg-carcasa-green hover:bg-carcasa-greenDark text-white font-bold py-3 rounded-lg text-xs sm:text-sm transition shadow-sm">
+                <i data-lucide="message-circle" class="w-4 h-4"></i>
+                <span>Enviar Consulta por WhatsApp</span>
+              </button>
+            </form>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================================== -->
+  <!-- H. PIE DE PÁGINA                                                      -->
+  <!-- ===================================================================== -->
+  <footer class="bg-carcasa-black text-gray-300 border-t border-white/10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8 text-xs">
+        <div class="space-y-3">
+          <div class="flex items-center gap-2.5">
+            <div class="h-9 w-9 rounded-lg bg-white p-0.5 overflow-hidden flex items-center justify-center border border-carcasa-green">
+              <img src="assets/images/logo.jpg" alt="CARCASA" class="h-full w-full object-contain">
+            </div>
+            <div>
+              <span class="text-lg font-black text-white leading-none block">CARCASA</span>
+              <span class="text-[10px] text-carcasa-gold font-bold uppercase tracking-wider">Jinotega • Nicaragua</span>
+            </div>
+          </div>
+          <p class="text-gray-400 leading-relaxed">Comercialización de maquinaria agrícola, equipos industriales, herramientas y repuestos de alta durabilidad.</p>
+          <div class="flex gap-2 pt-1">
+            <a id="footerFbLink" href="https://facebook.com" target="_blank" aria-label="Facebook CARCASA" class="p-2 rounded bg-white/5 hover:bg-carcasa-green text-white transition">
+              <i data-lucide="facebook" class="w-4 h-4"></i>
+            </a>
+            <a id="footerWaLink" href="https://wa.me/50557079297" target="_blank" aria-label="WhatsApp CARCASA" class="p-2 rounded bg-white/5 hover:bg-carcasa-green text-white transition">
+              <i data-lucide="message-circle" class="w-4 h-4"></i>
+            </a>
+          </div>
+        </div>
+
+        <div>
+          <h4 class="text-white font-bold mb-2.5 uppercase tracking-wider text-[11px]">Navegación</h4>
+          <ul class="space-y-1.5 text-gray-400">
+            <li><a href="#catalogo" class="hover:text-white transition">Catálogo</a></li>
+            <li><a href="#categorias" class="hover:text-white transition">Categorías</a></li>
+            <li><a href="#nosotros" class="hover:text-white transition">Conoce CARCASA</a></li>
+            <li><a href="#servicios" class="hover:text-white transition">Servicios</a></li>
+            <li><a href="#contacto" class="hover:text-white transition">Contacto</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="text-white font-bold mb-2.5 uppercase tracking-wider text-[11px]">Categorías Principales</h4>
+          <ul id="footerCategories" class="space-y-1.5 text-gray-400"></ul>
+        </div>
+
+        <div>
+          <h4 class="text-white font-bold mb-2.5 uppercase tracking-wider text-[11px]">Información de Contacto</h4>
+          <ul class="space-y-2 text-gray-400">
+            <li class="flex items-start gap-2">
+              <i data-lucide="map-pin" class="w-4 h-4 text-carcasa-green shrink-0 mt-0.5"></i>
+              <span id="footerAddress">Frente a Gasolinera Puma Apanás, Jinotega</span>
+            </li>
+            <li class="flex items-center gap-2">
+              <i data-lucide="phone" class="w-4 h-4 text-carcasa-green shrink-0"></i>
+              <span id="footerPhone">+505 5707-9297</span>
+            </li>
+            <li class="flex items-center gap-2">
+              <i data-lucide="mail" class="w-4 h-4 text-carcasa-green shrink-0"></i>
+              <span id="footerEmail">ventas@carcasajinotega.com</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="mt-8 pt-6 border-t border-white/10 flex flex-wrap justify-between items-center text-[11px] text-gray-400 gap-2">
+        <p>© 2026 CARCASA Jinotega. Todos los derechos reservados.</p>
+        <button onclick="handleAdminAccess()" class="hover:text-carcasa-gold transition flex items-center gap-1">
+          <i data-lucide="lock" class="w-3 h-3"></i> Acceso Administrativo
+        </button>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL: FICHA TÉCNICA INDIVIDUAL DEL EQUIPO                            -->
+  <!-- ===================================================================== -->
+  <div id="productModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center z-50 p-3 sm:p-4 overflow-y-auto">
+    <div class="bg-white rounded-2xl max-w-4xl w-full overflow-hidden shadow-2xl my-auto flex flex-col max-h-[92vh]">
+      
+      <!-- Encabezado Modal -->
+      <div class="p-4 sm:p-5 border-b border-gray-200 flex justify-between items-center bg-carcasa-gray/60">
+        <div class="flex items-center gap-2.5">
+          <span id="modalProductCategory" class="text-xs font-black uppercase tracking-wider text-carcasa-green bg-green-100 px-2.5 py-1 rounded-md"></span>
+          <span id="modalProductSlug" class="text-[11px] font-mono text-gray-500 hidden sm:inline"></span>
+        </div>
+        <button onclick="closeProductModal()" class="p-2 rounded-lg text-gray-500 hover:bg-gray-200 transition" aria-label="Cerrar ventana">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Contenido Modal Scrollable -->
+      <div class="p-5 sm:p-7 overflow-y-auto flex-1 space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-6 sm:gap-8 items-start">
+          
+          <!-- Columna Imagen -->
+          <div class="md:col-span-6 space-y-3">
+            <div class="relative bg-carcasa-gray rounded-xl overflow-hidden border border-gray-200 aspect-[4/3] flex items-center justify-center">
+              <img id="modalMainImage" src="" alt="Fotografía del producto" class="w-full h-full object-cover">
+              
+              <!-- Badge Disponibilidad -->
+              <span id="modalAvailabilityBadge" class="absolute top-3 left-3 text-xs font-bold px-3 py-1 rounded-md shadow"></span>
+              
+              <!-- Badge Código -->
+              <span id="modalCodeBadge" class="absolute bottom-3 left-3 bg-white/95 text-carcasa-black font-mono text-xs font-bold px-2.5 py-1 rounded shadow"></span>
+
+              <!-- Badge Precio esquina inferior derecha -->
+              <span id="modalImagePriceBadge" class="absolute bottom-3 right-3 bg-carcasa-green text-white text-base sm:text-lg font-black px-3.5 py-1.5 rounded-lg shadow-lg border border-white/20 tracking-tight"></span>
+            </div>
+            
+            <div id="modalThumbnails" class="flex gap-2 overflow-x-auto no-scrollbar pb-1"></div>
+          </div>
+
+          <!-- Columna Datos Comerciales -->
+          <div class="md:col-span-6 space-y-4">
+            <div>
+              <div class="flex items-center gap-2 text-xs font-bold text-gray-500 mb-1">
+                <span id="modalBrand"></span>
+                <span id="modalModelSeparator" class="text-gray-300">•</span>
+                <span id="modalModel"></span>
+              </div>
+              <h2 id="modalTitle" class="text-xl sm:text-2xl font-black text-carcasa-black leading-snug"></h2>
+              
+              <div id="modalPriceWrapper" class="mt-2.5 inline-block">
+                <span class="text-xs font-bold text-gray-500 block">Precio de referencia:</span>
+                <span id="modalPrice" class="text-2xl sm:text-3xl font-black text-carcasa-green tracking-tight"></span>
+              </div>
+            </div>
+
+            <div>
+              <h4 class="text-xs font-black uppercase tracking-wider text-carcasa-black mb-1.5">Descripción</h4>
+              <p id="modalDescription" class="text-xs sm:text-sm text-gray-600 leading-relaxed"></p>
+            </div>
+
+            <!-- Ficha Técnica Specs -->
+            <div class="bg-carcasa-gray p-4 rounded-xl border border-gray-200">
+              <h4 class="text-xs font-black uppercase tracking-wider text-carcasa-black mb-2.5 flex items-center gap-1.5">
+                <i data-lucide="sliders" class="w-4 h-4 text-carcasa-green"></i> Especificaciones Técnicas
+              </h4>
+              <div id="modalSpecsList" class="space-y-1.5 text-xs"></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Footer Modal: Acciones Dinámicas (Público vs Admin) -->
+      <div class="p-4 sm:p-5 border-t border-gray-200 bg-white">
+        
+        <!-- Acciones Modo Cliente (Público) -->
+        <div id="clientModalActions" class="flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center gap-2">
+            <button id="btnClientCopyLink" class="inline-flex items-center gap-1.5 bg-gray-100 hover:bg-gray-200 text-carcasa-black font-semibold text-xs px-3.5 py-2.5 rounded-lg border border-gray-200 transition">
+              <i data-lucide="link" class="w-4 h-4"></i>
+              <span>Copiar Enlace</span>
+            </button>
+            <button id="btnClientShareNative" class="inline-flex items-center gap-1.5 bg-gray-100 hover:bg-gray-200 text-carcasa-black font-semibold text-xs px-3.5 py-2.5 rounded-lg border border-gray-200 transition">
+              <i data-lucide="share-2" class="w-4 h-4"></i>
+              <span>Compartir</span>
+            </button>
+          </div>
+
+          <a id="btnProductWhatsapp" href="#" target="_blank" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-carcasa-green hover:bg-carcasa-greenDark text-white font-bold text-xs sm:text-sm px-6 py-2.5 rounded-lg shadow transition">
+            <i data-lucide="message-circle" class="w-4 h-4"></i>
+            <span>Consultar por WhatsApp</span>
+          </a>
+        </div>
+
+        <!-- Acciones Modo Administrador (Herramientas Comerciales de Venta Rápida) -->
+        <div id="adminModalDispatch" class="hidden space-y-2.5">
+          <div class="flex items-center justify-between text-[11px] text-carcasa-gold bg-carcasa-black px-3 py-1.5 rounded-lg font-bold">
+            <span class="flex items-center gap-1.5"><i data-lucide="zap" class="w-3.5 h-3.5 text-carcasa-gold"></i> Herramientas de Despacho Comercial CARCASA</span>
+            <button id="btnModalEditProduct" class="text-white hover:underline">Editar este equipo</button>
+          </div>
+
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <button id="btnDownloadTechSheet" class="flex items-center justify-center gap-1.5 bg-carcasa-green text-white font-bold text-xs py-2.5 px-3 rounded-lg hover:bg-carcasa-greenDark transition shadow-sm">
+              <i data-lucide="download" class="w-4 h-4"></i>
+              <span>Descargar Ficha (.PNG)</span>
+            </button>
+
+            <button id="btnDispatchCopySheetImg" class="flex items-center justify-center gap-1.5 bg-carcasa-black text-white font-bold text-xs py-2.5 px-3 rounded-lg hover:bg-black transition shadow-sm">
+              <i data-lucide="clipboard-copy" class="w-4 h-4 text-carcasa-gold"></i>
+              <span>Copiar Imagen (Ctrl+V)</span>
+            </button>
+
+            <a id="btnDispatchWA" href="#" target="_blank" class="flex items-center justify-center gap-1.5 bg-emerald-700 text-white font-bold text-xs py-2.5 px-3 rounded-lg hover:bg-emerald-800 transition shadow-sm">
+              <i data-lucide="send" class="w-4 h-4"></i>
+              <span>Enviar por WhatsApp</span>
+            </a>
+
+            <button id="btnDispatchNativeFile" class="flex items-center justify-center gap-1.5 bg-gray-100 hover:bg-gray-200 text-carcasa-black font-bold text-xs py-2.5 px-3 rounded-lg border border-gray-300 transition">
+              <i data-lucide="share" class="w-4 h-4"></i>
+              <span>Compartir Móvil</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL: PANEL ADMINISTRATIVO                                           -->
+  <!-- ===================================================================== -->
+  <div id="adminPanelModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center z-50 p-3 sm:p-5 overflow-y-auto">
+    <div class="bg-white rounded-2xl max-w-5xl w-full max-h-[92vh] flex flex-col overflow-hidden shadow-2xl my-auto">
+      
+      <!-- Cabecera Panel -->
+      <div class="p-4 sm:p-5 bg-carcasa-black text-white flex justify-between items-center border-b border-white/10">
+        <div class="flex items-center gap-3">
+          <div class="h-9 w-9 rounded-lg bg-white p-0.5 flex items-center justify-center border border-carcasa-gold">
+            <img src="assets/images/logo.jpg" alt="Logo" class="h-full w-full object-contain">
+          </div>
+          <div>
+            <h3 class="font-black text-base sm:text-lg flex items-center gap-2">
+              Panel Administrativo CARCASA
+              <span id="supabaseStatusBadge" class="text-[10px] bg-white/10 text-gray-300 font-normal px-2 py-0.5 rounded-full">Modo Local</span>
+            </h3>
+            <p class="text-xs text-gray-400">Gestión de catálogo, categorías, fichas técnicas y configuración.</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="logoutAdmin()" class="text-xs text-red-400 hover:text-red-300 font-bold px-2 py-1">Cerrar Sesión</button>
+          <button onclick="closeModal('adminPanelModal')" class="p-1.5 rounded-lg text-gray-400 hover:text-white" aria-label="Cerrar">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Pestañas de Navegación del Panel -->
+      <div class="flex border-b border-gray-200 bg-carcasa-gray/60 px-4 pt-2 gap-2 text-xs font-bold overflow-x-auto no-scrollbar">
+        <button onclick="switchAdminTab('productos')" id="admTab-productos" class="py-2.5 px-4 border-b-2 border-carcasa-green text-carcasa-green">
+          Productos y Equipos
+        </button>
+        <button onclick="switchAdminTab('categorias')" id="admTab-categorias" class="py-2.5 px-4 border-b-2 border-transparent text-gray-500 hover:text-carcasa-black">
+          Categorías
+        </button>
+        <button onclick="switchAdminTab('configuracion')" id="admTab-configuracion" class="py-2.5 px-4 border-b-2 border-transparent text-gray-500 hover:text-carcasa-black">
+          Configuración y Contacto
+        </button>
+        <button onclick="switchAdminTab('supabase')" id="admTab-supabase" class="py-2.5 px-4 border-b-2 border-transparent text-gray-500 hover:text-carcasa-black">
+          Conexión Supabase
+        </button>
+      </div>
+
+      <!-- Contenido del Panel -->
+      <div class="p-5 sm:p-6 overflow-y-auto flex-1 space-y-5">
+        
+        <!-- ================= TAB PRODUCTOS ================= -->
+        <div id="adminView-productos" class="space-y-4">
+          <div class="flex flex-wrap justify-between items-center gap-3">
+            <div>
+              <h4 class="font-black text-carcasa-black text-base">Inventario de Equipos</h4>
+              <p class="text-xs text-gray-500">Agrega, edita o desactiva equipos del catálogo público.</p>
+            </div>
+            <button onclick="toggleProductForm(true)" class="bg-carcasa-green hover:bg-carcasa-greenDark text-white text-xs font-bold py-2 px-4 rounded-lg flex items-center gap-1.5 shadow">
+              <i data-lucide="plus" class="w-4 h-4"></i> Nuevo Equipo
+            </button>
+          </div>
+
+          <!-- Formulario Agregar / Editar Producto -->
+          <form id="adminProductForm" class="hidden bg-carcasa-gray p-4 sm:p-5 rounded-xl border border-gray-200 space-y-4 text-xs">
+            <input type="hidden" id="editProductId">
+            <div class="flex justify-between items-center border-b pb-2">
+              <h5 id="productFormTitle" class="font-black text-sm text-carcasa-black">Nuevo Equipo</h5>
+              <button type="button" onclick="toggleProductForm(false)" class="text-gray-500 hover:text-carcasa-black font-bold">Cancelar</button>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <label class="block font-bold mb-1">Nombre Comercial del Equipo *</label>
+                <input type="text" id="prodNombre" required placeholder="Ej: Motobomba Diésel 3 Pulgadas" class="w-full px-3 py-2 bg-white border rounded-lg">
+              </div>
+              <div>
+                <label class="block font-bold mb-1">Marca</label>
+                <input type="text" id="prodMarca" placeholder="Ej: Honda, Kohler, etc." class="w-full px-3 py-2 bg-white border rounded-lg">
+              </div>
+              <div>
+                <label class="block font-bold mb-1">Modelo</label>
+                <input type="text" id="prodModelo" placeholder="Ej: GX-160 / Serie Pro" class="w-full px-3 py-2 bg-white border rounded-lg">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+              <div>
+                <label class="block font-bold mb-1">Categoría *</label>
+                <select id="prodCategoria" class="w-full px-3 py-2 bg-white border rounded-lg font-medium"></select>
+              </div>
+              <div>
+                <label class="block font-bold mb-1">Código Interno</label>
+                <input type="text" id="prodCodigo" placeholder="Ej: MB-01" class="w-full px-3 py-2 bg-white border rounded-lg font-mono">
+              </div>
+              <div>
+                <label class="block font-bold mb-1">Moneda</label>
+                <select id="prodMoneda" class="w-full px-3 py-2 bg-white border rounded-lg font-bold">
+                  <option value="$">Dólares ($)</option>
+                  <option value="C$">Córdobas (C$)</option>
+                </select>
+              </div>
+              <div>
+                <label class="block font-bold mb-1">Precio (Opcional)</label>
+                <input type="text" id="prodPrecio" placeholder="Ej: 395 (vacío = sin precio)" class="w-full px-3 py-2 bg-white border rounded-lg">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <label class="block font-bold mb-1">Disponibilidad</label>
+                <select id="prodDisponibilidad" class="w-full px-3 py-2 bg-white border rounded-lg">
+                  <option value="Disponible">Disponible</option>
+                  <option value="Bajo Pedido">Bajo Pedido</option>
+                  <option value="Agotado">Agotado</option>
+                </select>
+              </div>
+              <div class="sm:col-span-2">
+                <label class="block font-bold mb-1">Subir Fotos del Equipo (o pegar URLs abajo)</label>
+                <input type="file" id="prodFiles" multiple accept="image/*" class="w-full text-xs text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-carcasa-black file:text-white hover:file:bg-black">
+              </div>
+            </div>
+
+            <div>
+              <label class="block font-bold mb-1">URLs de Fotos adicionales (separadas por coma)</label>
+              <input type="text" id="prodImageUrls" placeholder="https://ejemplo.com/foto1.jpg, https://ejemplo.com/foto2.jpg" class="w-full px-3 py-2 bg-white border rounded-lg font-mono text-[11px]">
+            </div>
+
+            <div>
+              <label class="block font-bold mb-1">Descripción Comercial *</label>
+              <textarea id="prodDescripcion" rows="2" required placeholder="Breve descripción del equipo, aplicaciones y beneficios principales..." class="w-full px-3 py-2 bg-white border rounded-lg"></textarea>
+            </div>
+
+            <div>
+              <label class="block font-bold mb-1">Especificaciones Técnicas (una por línea, formato: Característica: Valor)</label>
+              <textarea id="prodSpecs" rows="3" placeholder="Potencia: 6.5 HP&#10;Caudal: 1000 L/min&#10;Combustible: Diésel" class="w-full px-3 py-2 bg-white border rounded-lg font-mono text-xs"></textarea>
+            </div>
+
+            <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
+              <div class="flex gap-4">
+                <label class="inline-flex items-center gap-2 font-semibold"><input type="checkbox" id="prodActivo" checked> Visible en el catálogo</label>
+                <label class="inline-flex items-center gap-2 font-semibold text-carcasa-green"><input type="checkbox" id="prodDestacado"> Producto Destacado</label>
+              </div>
+              <button type="submit" class="bg-carcasa-green hover:bg-carcasa-greenDark text-white font-bold px-6 py-2 rounded-lg text-xs shadow">
+                Guardar Equipo
+              </button>
+            </div>
+          </form>
+
+          <!-- Tabla de Productos -->
+          <div class="overflow-x-auto border border-gray-200 rounded-xl">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead class="bg-carcasa-gray font-bold border-b border-gray-200 text-gray-600">
+                <tr>
+                  <th class="p-3">Equipo / Slug</th>
+                  <th class="p-3">Categoría</th>
+                  <th class="p-3">Precio</th>
+                  <th class="p-3">Estado</th>
+                  <th class="p-3 text-right">Acciones Rápidas</th>
+                </tr>
+              </thead>
+              <tbody id="adminProductsTable" class="divide-y divide-gray-100"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ================= TAB CATEGORÍAS ================= -->
+        <div id="adminView-categorias" class="hidden space-y-4">
+          <div>
+            <h4 class="font-black text-carcasa-black text-base">Categorías de Maquinaria</h4>
+            <p class="text-xs text-gray-500">Agrega o administra las familias de equipos visibles en el catálogo.</p>
+          </div>
+
+          <form id="adminCategoryForm" class="bg-carcasa-gray p-4 rounded-xl border border-gray-200 grid grid-cols-1 sm:grid-cols-4 gap-3 items-end text-xs">
+            <div>
+              <label class="block font-bold mb-1">Nombre *</label>
+              <input type="text" id="catNombre" required placeholder="Ej: Motores Eléctricos" class="w-full px-3 py-2 bg-white border rounded-lg">
+            </div>
+            <div>
+              <label class="block font-bold mb-1">Descripción Breve *</label>
+              <input type="text" id="catDesc" required placeholder="Ej: Fuerza motriz para talleres" class="w-full px-3 py-2 bg-white border rounded-lg">
+            </div>
+            <div>
+              <label class="block font-bold mb-1">URL de Imagen</label>
+              <input type="text" id="catImg" placeholder="https://images.unsplash.com/..." class="w-full px-3 py-2 bg-white border rounded-lg">
+            </div>
+            <button type="submit" class="bg-carcasa-green hover:bg-carcasa-greenDark text-white font-bold py-2 px-4 rounded-lg shadow">
+              Agregar Categoría
+            </button>
+          </form>
+
+          <div id="adminCategoriesList" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
+        </div>
+
+        <!-- ================= TAB CONFIGURACIÓN ================= -->
+        <div id="adminView-configuracion" class="hidden space-y-4">
+          <div>
+            <h4 class="font-black text-carcasa-black text-base">Datos de Contacto y Portada</h4>
+            <p class="text-xs text-gray-500">Modifica los números de WhatsApp, teléfono visible, correos y textos de presentación.</p>
+          </div>
+
+          <form id="adminConfigForm" class="space-y-3.5 bg-carcasa-gray p-5 rounded-xl border border-gray-200 text-xs">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block font-bold mb-1">WhatsApp Empresarial (con código país, sin + ni espacios) *</label>
+                <input type="text" id="cfgWhatsapp" required placeholder="50557079297" class="w-full px-3 py-2 bg-white border rounded-lg font-mono">
+              </div>
+              <div>
+                <label class="block font-bold mb-1">Teléfono Visible en el Sitio</label>
+                <input type="text" id="cfgPhoneDisplay" required placeholder="+505 5707-9297" class="w-full px-3 py-2 bg-white border rounded-lg">
+              </div>
+              <div>
+                <label class="block font-bold mb-1">Correo Electrónico</label>
+                <input type="email" id="cfgEmail" class="w-full px-3 py-2 bg-white border rounded-lg">
+              </div>
+              <div>
+                <label class="block font-bold mb-1">Horario de Atención</label>
+                <input type="text" id="cfgSchedule" class="w-full px-3 py-2 bg-white border rounded-lg">
+              </div>
+            </div>
+
+            <div>
+              <label class="block font-bold mb-1">Dirección Física</label>
+              <input type="text" id="cfgAddress" class="w-full px-3 py-2 bg-white border rounded-lg">
+            </div>
+
+            <div>
+              <label class="block font-bold mb-1">Enlace Facebook</label>
+              <input type="url" id="cfgFacebook" class="w-full px-3 py-2 bg-white border rounded-lg">
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block font-bold mb-1">Título de Portada</label>
+                <input type="text" id="cfgHeroTitle" class="w-full px-3 py-2 bg-white border rounded-lg">
+              </div>
+              <div>
+                <label class="block font-bold mb-1">Subtítulo de Portada</label>
+                <textarea id="cfgHeroSubtitle" rows="2" class="w-full px-3 py-2 bg-white border rounded-lg"></textarea>
+              </div>
+            </div>
+
+            <div class="flex justify-end pt-2">
+              <button type="submit" class="bg-carcasa-green hover:bg-carcasa-greenDark text-white font-bold px-6 py-2.5 rounded-lg shadow">
+                Guardar Configuración
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- ================= TAB SUPABASE ================= -->
+        <div id="adminView-supabase" class="hidden space-y-4 text-xs">
+          <div>
+            <h4 class="font-black text-carcasa-black text-base">Estado de la Conexión Supabase</h4>
+            <p class="text-xs text-gray-500">Conecta el catálogo a tu proyecto gratuito de Supabase para sincronización en la nube.</p>
+          </div>
+
+          <div class="bg-carcasa-gray p-4 rounded-xl border border-gray-200 space-y-3">
+            <div class="flex items-center gap-2">
+              <span class="font-bold">Estado actual:</span>
+              <span id="supabaseIndicator" class="px-2.5 py-1 rounded font-bold text-xs bg-yellow-100 text-yellow-800">Modo Local (localStorage)</span>
+            </div>
+            <p class="text-gray-600 leading-relaxed">
+              Para activar el backend en la nube en producción, ingresa la URL y la Anon Key de tu proyecto en Supabase. Si dejas estos campos vacíos, el catálogo funcionará sin problemas guardando todo de forma local en el navegador.
+            </p>
+
+            <form id="adminSupabaseConfigForm" class="space-y-3 pt-2">
+              <div>
+                <label class="block font-bold mb-1">SUPABASE_URL</label>
+                <input type="text" id="cfgSupabaseUrl" placeholder="https://xyzcompany.supabase.co" class="w-full px-3 py-2 bg-white border rounded-lg font-mono">
+              </div>
+              <div>
+                <label class="block font-bold mb-1">SUPABASE_ANON_KEY</label>
+                <input type="password" id="cfgSupabaseKey" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." class="w-full px-3 py-2 bg-white border rounded-lg font-mono">
+              </div>
+              <div class="flex justify-end gap-2 pt-1">
+                <button type="button" onclick="disconnectSupabase()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-carcasa-black font-bold rounded-lg">Restablecer a Local</button>
+                <button type="submit" class="px-5 py-2 bg-carcasa-green hover:bg-carcasa-greenDark text-white font-bold rounded-lg shadow">Guardar y Conectar</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL: LOGIN ADMINISTRATIVO                                           -->
+  <!-- ===================================================================== -->
+  <div id="loginModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl space-y-4">
+      <div class="flex items-center gap-3">
+        <div class="h-10 w-10 rounded-lg bg-white p-0.5 flex items-center justify-center border border-carcasa-green">
+          <img src="assets/images/logo.jpg" alt="CARCASA" class="h-full w-full object-contain">
+        </div>
+        <div>
+          <h3 class="text-base font-black text-carcasa-black leading-tight">Acceso Administrativo</h3>
+          <p class="text-xs text-gray-500">CARCASA Jinotega</p>
+        </div>
+      </div>
+      
+      <p class="text-xs text-gray-600">Inicia sesión para gestionar equipos, generar y descargar fichas técnicas HD para WhatsApp.</p>
+      
+      <form id="loginForm" class="space-y-3 text-xs">
+        <div>
+          <label class="block font-bold mb-1">Correo Electrónico</label>
+          <input type="email" id="loginEmail" required value="admin@carcasajinotega.com" class="w-full px-3.5 py-2.5 border rounded-lg">
+        </div>
+        <div>
+          <label class="block font-bold mb-1">Contraseña</label>
+          <input type="password" id="loginPass" required placeholder="Contraseña de acceso" class="w-full px-3.5 py-2.5 border rounded-lg">
+        </div>
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="closeModal('loginModal')" class="px-4 py-2 rounded-lg bg-gray-100 text-xs font-bold text-gray-700 hover:bg-gray-200">Cancelar</button>
+          <button type="submit" class="px-5 py-2 rounded-lg bg-carcasa-green hover:bg-carcasa-greenDark text-white text-xs font-bold shadow">Ingresar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- NOTIFICACIÓN TOAST                                                    -->
+  <!-- ===================================================================== -->
+  <div id="toast" class="fixed bottom-5 right-5 bg-carcasa-black text-white text-xs font-semibold px-4 py-3 rounded-xl shadow-xl border-l-4 border-carcasa-green hidden items-center gap-2 z-50 transition">
+    <i data-lucide="check-circle" class="w-4 h-4 text-carcasa-green"></i>
+    <span id="toastText">Operación realizada</span>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- LÓGICA JAVASCRIPT MODULAR                                             -->
+  <!-- ===================================================================== -->
+  <script>
+    // Configuración Inicial de Supabase (Almacenada en localStorage o configurable en UI)
+    let SUPABASE_URL = localStorage.getItem("carcasa_sb_url") || "https://czsszdsugycfuufllmzx.supabase.co";
+    let SUPABASE_ANON_KEY = localStorage.getItem("carcasa_sb_key") || "sb_publishable_lcNmCH4UorpfMrA94SeMjA_xNXKVR9S";
+    let sb = null;
+
+    function initSupabaseClient() {
+      if (SUPABASE_URL && SUPABASE_ANON_KEY && window.supabase) {
+        try {
+          sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+          return true;
+        } catch (e) {
+          console.warn("Error al inicializar Supabase:", e);
+          sb = null;
+        }
+      }
+      sb = null;
+      return false;
+    }
+
+    const INITIAL_CATEGORIES = [
+      { id: 1, nombre: "Maquinaria agrícola", desc: "Desgranadoras, picadoras, trillos y campo.", img: "https://images.unsplash.com/photo-1592982537447-7440770cbfc9?auto=format&fit=crop&w=600&q=80" },
+      { id: 2, nombre: "Motores eléctricos y diésel", desc: "Fuerza motriz estacionaria.", img: "https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&w=600&q=80" },
+      { id: 3, nombre: "Generadores y plantas eléctricas", desc: "Respaldo energético continuo.", img: "https://images.unsplash.com/photo-1513828583688-c52646db42da?auto=format&fit=crop&w=600&q=80" },
+      { id: 4, nombre: "Bombas y motobombas", desc: "Riego, trasvase y presión de agua.", img: "https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?auto=format&fit=crop&w=600&q=80" },
+      { id: 5, nombre: "Equipos de carpintería", desc: "Cepilladoras, canteadoras y sierras.", img: "https://images.unsplash.com/photo-1572981779307-38b8cabb2407?auto=format&fit=crop&w=600&q=80" },
+      { id: 6, nombre: "Herramientas eléctricas", desc: "Taladros, esmeriles y caladoras.", img: "https://images.unsplash.com/photo-1504148455328-c376907d081c?auto=format&fit=crop&w=600&q=80" },
+      { id: 7, nombre: "Equipos industriales", desc: "Compresores, prensas y hornos.", img: "https://images.unsplash.com/photo-1565043589221-1a6fd9ae45c7?auto=format&fit=crop&w=600&q=80" },
+      { id: 8, nombre: "Equipos para procesamiento de café", desc: "Despulpadoras y tostadoras.", img: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=600&q=80" },
+      { id: 9, nombre: "Repuestos y accesorios", desc: "Consumibles y piezas de recambio.", img: "https://images.unsplash.com/photo-1530124566582-a618bc2615dc?auto=format&fit=crop&w=600&q=80" },
+      { id: 10, nombre: "Equipos de construcción y talleres", desc: "Tecles, soldadoras e hidrolavadoras.", img: "https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?auto=format&fit=crop&w=600&q=80" }
+    ];
+
+    const INITIAL_PRODUCTS = [
+      {
+        id: 1,
+        slug: "motobomba-diesel",
+        codigo: "MB-01",
+        nombre: "Motobomba Diésel de Alto Caudal",
+        marca: "Equipo Ilustrativo",
+        modelo: "Serie Agrícola",
+        categoria: "Bombas y motobombas",
+        descripcion: "Motobomba con chasis tubular reforzado para riego agrícola, llenado de tanques y trasvase de agua en campo.",
+        specs: ["Combustible: Diésel", "Chasis: Estructura tubular reforzada", "Aplicación: Riego y trasvase agrícola"],
+        moneda: "$",
+        precio: "395",
+        disponibilidad: "Disponible",
+        destacado: true,
+        activo: true,
+        imagenes: ["https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?auto=format&fit=crop&w=900&q=80"]
+      },
+      {
+        id: 2,
+        slug: "generador-electrico",
+        codigo: "GE-02",
+        nombre: "Generador Eléctrico Estacionario",
+        marca: "Equipo Ilustrativo",
+        modelo: "Serie Respaldo",
+        categoria: "Generadores y plantas eléctricas",
+        descripcion: "Planta eléctrica para respaldo continuo en fincas, comercios y operaciones que no pueden detenerse.",
+        specs: ["Salida: Monofásica / Bifásica", "Arranque: Eléctrico y manual", "Uso: Respaldo continuo en fincas y negocios"],
+        moneda: "$",
+        precio: "780",
+        disponibilidad: "Bajo Pedido",
+        destacado: true,
+        activo: true,
+        imagenes: ["https://images.unsplash.com/photo-1513828583688-c52646db42da?auto=format&fit=crop&w=900&q=80"]
+      },
+      {
+        id: 3,
+        slug: "motor-electrico-industrial",
+        codigo: "ME-03",
+        nombre: "Motor Eléctrico Industrial",
+        marca: "Equipo Ilustrativo",
+        modelo: "Alta Eficiencia",
+        categoria: "Motores eléctricos y diésel",
+        descripcion: "Motor para trillos, picadoras, molinos y maquinaria que requiere potencia confiable y marcha continua.",
+        specs: ["Voltaje: 220V / 440V", "Carcasa: Hierro fundido para trabajo pesado", "Aplicación: Trillos, picadoras y talleres"],
+        moneda: "C$",
+        precio: "12500",
+        disponibilidad: "Disponible",
+        destacado: true,
+        activo: true,
+        imagenes: ["https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&w=900&q=80"]
+      },
+      {
+        id: 4,
+        slug: "despulpadora-de-cafe",
+        codigo: "CF-04",
+        nombre: "Despulpadora Ecológica de Café",
+        marca: "Equipo Ilustrativo",
+        modelo: "Beneficio Húmedo",
+        categoria: "Equipos para procesamiento de café",
+        descripcion: "Equipo para despulpado uniforme de café cereza, optimizado para conservación de agua y rendimiento en beneficio.",
+        specs: ["Capacidad: Alto rendimiento por hora", "Material: Tambor y pechero anti-desgaste", "Uso: Beneficiado húmedo en fincas cafetaleras"],
+        moneda: "$",
+        precio: "650",
+        disponibilidad: "Disponible",
+        destacado: true,
+        activo: true,
+        imagenes: ["https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=900&q=80"]
+      },
+      {
+        id: 5,
+        slug: "sierra-circular-banco",
+        codigo: "CP-05",
+        nombre: "Sierra Circular de Banco para Madera",
+        marca: "Equipo Ilustrativo",
+        modelo: "Taller Profesional",
+        categoria: "Equipos de carpintería",
+        descripcion: "Sierra de mesa con guía paralela de alta precisión para cortes limpios en maderas duras y tableros.",
+        specs: ["Guía: Paralela micrométrica", "Mesa: Fundición rectificada", "Seguridad: Guarda protectora con extractor"],
+        moneda: "C$",
+        precio: "18900",
+        disponibilidad: "Disponible",
+        destacado: false,
+        activo: true,
+        imagenes: ["https://images.unsplash.com/photo-1572981779307-38b8cabb2407?auto=format&fit=crop&w=900&q=80"]
+      },
+      {
+        id: 6,
+        slug: "taladro-percutor-industrial",
+        codigo: "HE-06",
+        nombre: "Taladro Percutor Industrial 1/2\"",
+        marca: "Equipo Ilustrativo",
+        modelo: "Heavy Duty",
+        categoria: "Herramientas eléctricas",
+        descripcion: "Herramienta de alto impacto para perforación en concreto, metal y madera en montajes y herrería.",
+        specs: ["Mandril: 1/2 pulgada metálico", "Velocidad: Variable y reversible", "Incluye: Empuñadura lateral y varilla de profundidad"],
+        moneda: "$",
+        precio: "115",
+        disponibilidad: "Disponible",
+        destacado: false,
+        activo: true,
+        imagenes: ["https://images.unsplash.com/photo-1504148455328-c376907d081c?auto=format&fit=crop&w=900&q=80"]
+      }
+    ];
+
+    const INITIAL_CONFIG = {
+      whatsapp: "50557079297",
+      phoneDisplay: "+505 5707-9297",
+      email: "ventas@carcasajinotega.com",
+      schedule: "Lunes a Sábado: 8:00 AM - 5:30 PM",
+      address: "Frente a Gasolinera Puma Apanás, Jinotega, Nicaragua.",
+      facebook: "https://facebook.com",
+      heroTitle: "Maquinaria, equipos y soluciones para impulsar tu trabajo.",
+      heroSubtitle: "Encuentra maquinaria agrícola, equipos industriales, herramientas y repuestos con asesoramiento técnico especializado en Jinotega."
+    };
+
+    let categories = JSON.parse(localStorage.getItem("carcasa_cat_v7")) || INITIAL_CATEGORIES;
+    let products = JSON.parse(localStorage.getItem("carcasa_prod_v7")) || INITIAL_PRODUCTS;
+    let config = JSON.parse(localStorage.getItem("carcasa_cfg_v7")) || INITIAL_CONFIG;
+    let isAdmin = sessionStorage.getItem("carcasa_admin_v7") === "true";
+    let quickTab = "todos";
+    let visibleLimit = 9;
+
+    // =========================================================================
+    // FORMATEO DE PRECIO (CÓRDOBAS C$ / DÓLARES $)
+    // =========================================================================
+    function formatProductPrice(p) {
+      if (!p || !p.precio || !String(p.precio).trim()) return "";
+      const raw = String(p.precio).trim();
+      if (raw.startsWith("C$") || raw.startsWith("$") || raw.toUpperCase().startsWith("USD")) {
+        return raw;
+      }
+      const symbol = p.moneda === "$" ? "$" : "C$";
+      return `${symbol} ${raw}`;
+    }
+
+    // =========================================================================
+    // GENERADOR DE FICHA TÉCNICA HD (CANVAS API EN CLIENTE)
+    // =========================================================================
+    function drawRoundedRect(ctx, x, y, w, h, r) {
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.lineTo(x + w - r, y);
+      ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+      ctx.lineTo(x + w, y + h - r);
+      ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+      ctx.lineTo(x + r, y + h);
+      ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+      ctx.lineTo(x, y + r);
+      ctx.quadraticCurveTo(x, y, x + r, y);
+      ctx.closePath();
+    }
+
+    function wrapCanvasText(ctx, text, maxWidth, maxLines = 3) {
+      const words = String(text || "").split(/\s+/);
+      const lines = [];
+      let currentLine = "";
+
+      for (let i = 0; i < words.length; i++) {
+        const testLine = currentLine ? `${currentLine} ${words[i]}` : words[i];
+        if (ctx.measureText(testLine).width <= maxWidth) {
+          currentLine = testLine;
+        } else {
+          if (currentLine) lines.push(currentLine);
+          currentLine = words[i];
+          if (lines.length >= maxLines) break;
+        }
+      }
+      if (currentLine && lines.length < maxLines) {
+        lines.push(currentLine);
+      }
+      if (lines.length === maxLines && words.join(" ") !== lines.join(" ")) {
+        lines[maxLines - 1] = lines[maxLines - 1].replace(/.{0,3}$/, "...");
+      }
+      return lines;
+    }
+
+    function loadSafeImage(url) {
+      return new Promise((resolve) => {
+        if (!url) return resolve(null);
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.onload = () => resolve(img);
+        img.onerror = () => resolve(null);
+        img.src = url;
+      });
+    }
+
+    async function generateTechnicalSheetBlob(p) {
+      const specs = (p.specs && p.specs.length > 0)
+        ? p.specs
+        : ["Asesoramiento técnico especializado", "Envíos disponibles a todo Nicaragua"];
+
+      const W = 1080;
+      const specRowH = 54;
+      const specsBoxH = 68 + specs.length * specRowH;
+      const H = 890 + specsBoxH + 120;
+
+      const canvas = document.createElement("canvas");
+      canvas.width = W;
+      canvas.height = H;
+      const ctx = canvas.getContext("2d");
+
+      // Fondo blanco general
+      ctx.fillStyle = "#FFFFFF";
+      ctx.fillRect(0, 0, W, H);
+
+      // 1. ENCABEZADO NEGRO INDUSTRIAL (#171A18)
+      ctx.fillStyle = "#171A18";
+      ctx.fillRect(0, 0, W, 124);
+
+      // Barra verde inferior del header (#276B24)
+      ctx.fillStyle = "#276B24";
+      ctx.fillRect(0, 118, W, 6);
+
+      // Intentar dibujar el logotipo oficial en el Canvas
+      const logoImg = await loadSafeImage("assets/images/logo.jpg");
+      let textStartX = 56;
+      if (logoImg) {
+        const logoBoxSize = 84;
+        const logoX = 56;
+        const logoY = 17;
+        drawRoundedRect(ctx, logoX, logoY, logoBoxSize, logoBoxSize, 12);
+        ctx.fillStyle = "#FFFFFF";
+        ctx.fill();
+        ctx.save();
+        ctx.clip();
+        ctx.drawImage(logoImg, logoX, logoY, logoBoxSize, logoBoxSize);
+        ctx.restore();
+        textStartX = 160;
+      }
+
+      // Nombre de Marca CARCASA
+      ctx.fillStyle = "#FFFFFF";
+      ctx.font = "900 42px Inter, Arial, sans-serif";
+      ctx.textAlign = "left";
+      ctx.fillText("CARCASA", textStartX, 62);
+
+      ctx.fillStyle = "#D5A52B";
+      ctx.font = "700 18px Inter, Arial, sans-serif";
+      ctx.fillText("JINOTEGA • NICARAGUA", textStartX, 92);
+
+      // Categoría a la derecha del encabezado
+      ctx.fillStyle = "#D5A52B";
+      ctx.font = "800 20px Inter, Arial, sans-serif";
+      ctx.textAlign = "right";
+      ctx.fillText(p.categoria.toUpperCase(), W - 56, 70);
+      ctx.textAlign = "left";
+
+      // 2. CONTENEDOR DE FOTOGRAFÍA DEL EQUIPO
+      const imgX = 56, imgY = 156, imgW = W - 112, imgH = 440;
+      ctx.save();
+      drawRoundedRect(ctx, imgX, imgY, imgW, imgH, 20);
+      ctx.fillStyle = "#F1F3F1";
+      ctx.fill();
+      ctx.clip();
+
+      const mainImgUrl = (p.imagenes && p.imagenes[0]) ? p.imagenes[0] : "";
+      const loadedImg = await loadSafeImage(mainImgUrl);
+
+      if (loadedImg) {
+        const scale = Math.max(imgW / loadedImg.naturalWidth, imgH / loadedImg.naturalHeight);
+        const drawW = loadedImg.naturalWidth * scale;
+        const drawH = loadedImg.naturalHeight * scale;
+        const offsetX = imgX + (imgW - drawW) / 2;
+        const offsetY = imgY + (imgH - drawH) / 2;
+        ctx.drawImage(loadedImg, offsetX, offsetY, drawW, drawH);
+      } else {
+        ctx.fillStyle = "#171A18";
+        ctx.fillRect(imgX, imgY, imgW, imgH);
+        ctx.fillStyle = "#D5A52B";
+        ctx.font = "800 32px Inter, Arial, sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("FICHA TÉCNICA CARCASA", W / 2, imgY + imgH / 2);
+        ctx.textAlign = "left";
+      }
+
+      // Badge Disponibilidad (Esquina superior izquierda de la foto)
+      if (p.disponibilidad) {
+        ctx.font = "800 22px Inter, Arial, sans-serif";
+        const availW = ctx.measureText(p.disponibilidad).width + 40;
+        drawRoundedRect(ctx, imgX + 24, imgY + 24, availW, 46, 10);
+        ctx.fillStyle = p.disponibilidad === "Disponible" ? "#276B24" : "#D5A52B";
+        ctx.fill();
+        ctx.fillStyle = p.disponibilidad === "Disponible" ? "#FFFFFF" : "#171A18";
+        ctx.fillText(p.disponibilidad, imgX + 44, imgY + 55);
+      }
+
+      // Badge Código (Esquina inferior izquierda de la foto)
+      if (p.codigo) {
+        const codeTxt = `Cód: ${p.codigo}`;
+        ctx.font = "700 22px monospace";
+        const codeW = ctx.measureText(codeTxt).width + 36;
+        drawRoundedRect(ctx, imgX + 24, imgY + imgH - 68, codeW, 44, 10);
+        ctx.fillStyle = "rgba(255,255,255,0.95)";
+        ctx.fill();
+        ctx.fillStyle = "#171A18";
+        ctx.fillText(codeTxt, imgX + 42, imgY + imgH - 38);
+      }
+
+      // Badge Precio (Esquina inferior derecha de la foto)
+      const formattedPrice = formatProductPrice(p);
+      if (formattedPrice) {
+        ctx.font = "900 36px Inter, Arial, sans-serif";
+        const priceW = ctx.measureText(formattedPrice).width + 52;
+        const priceH = 66;
+        const px = imgX + imgW - priceW - 24;
+        const py = imgY + imgH - priceH - 24;
+
+        drawRoundedRect(ctx, px, py, priceW, priceH, 14);
+        ctx.fillStyle = "#276B24";
+        ctx.fill();
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = "rgba(255,255,255,0.4)";
+        ctx.stroke();
+
+        ctx.fillStyle = "#FFFFFF";
+        ctx.fillText(formattedPrice, px + 26, py + 46);
+      }
+      ctx.restore();
+
+      // Borde sutil alrededor de la foto
+      drawRoundedRect(ctx, imgX, imgY, imgW, imgH, 20);
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = "#E5E7EB";
+      ctx.stroke();
+
+      // 3. INFORMACIÓN COMERCIAL DEL EQUIPO
+      let cursorY = 642;
+
+      // Marca y Modelo
+      const metaText = [p.marca, p.modelo].filter(Boolean).join("  •  ");
+      if (metaText) {
+        ctx.fillStyle = "#6B7280";
+        ctx.font = "700 24px Inter, Arial, sans-serif";
+        ctx.fillText(metaText, 56, cursorY);
+        cursorY += 46;
+      }
+
+      // Nombre comercial del producto
+      ctx.fillStyle = "#171A18";
+      ctx.font = "900 44px Inter, Arial, sans-serif";
+      const titleLines = wrapCanvasText(ctx, p.nombre, W - 112, 2);
+      titleLines.forEach(line => {
+        ctx.fillText(line, 56, cursorY);
+        cursorY += 52;
+      });
+
+      cursorY += 8;
+
+      // Descripción corta
+      ctx.fillStyle = "#4B5563";
+      ctx.font = "500 24px Inter, Arial, sans-serif";
+      const descLines = wrapCanvasText(ctx, p.descripcion, W - 112, 2);
+      descLines.forEach(line => {
+        ctx.fillText(line, 56, cursorY);
+        cursorY += 34;
+      });
+
+      cursorY += 24;
+
+      // 4. BLOQUE DE CARACTERÍSTICAS TÉCNICAS
+      ctx.fillStyle = "#171A18";
+      ctx.font = "800 22px Inter, Arial, sans-serif";
+      ctx.fillText("CARACTERÍSTICAS TÉCNICAS", 56, cursorY);
+      cursorY += 20;
+
+      const boxH = 24 + specs.length * specRowH;
+      drawRoundedRect(ctx, 56, cursorY, W - 112, boxH, 16);
+      ctx.fillStyle = "#F1F3F1";
+      ctx.fill();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = "#E5E7EB";
+      ctx.stroke();
+
+      specs.forEach((rawLine, idx) => {
+        const rowY = cursorY + 46 + idx * specRowH;
+        if (idx > 0) {
+          ctx.beginPath();
+          ctx.moveTo(84, rowY - 34);
+          ctx.lineTo(W - 84, rowY - 34);
+          ctx.strokeStyle = "#E5E7EB";
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+        }
+
+        const parts = rawLine.split(":");
+        if (parts.length > 1) {
+          const label = parts[0].trim();
+          const val = parts.slice(1).join(":").trim();
+
+          ctx.fillStyle = "#6B7280";
+          ctx.font = "600 23px Inter, Arial, sans-serif";
+          ctx.textAlign = "left";
+          ctx.fillText(label, 84, rowY);
+
+          ctx.fillStyle = "#171A18";
+          ctx.font = "800 23px Inter, Arial, sans-serif";
+          ctx.textAlign = "right";
+          ctx.fillText(val, W - 84, rowY);
+          ctx.textAlign = "left";
+        } else {
+          ctx.fillStyle = "#171A18";
+          ctx.font = "700 23px Inter, Arial, sans-serif";
+          ctx.fillText(`•  ${rawLine}`, 84, rowY);
+        }
+      });
+
+      // 5. PIE DE FICHA CON CONTACTO WHATSAPP
+      const footerY = H - 114;
+      ctx.fillStyle = "#276B24";
+      ctx.fillRect(0, footerY - 6, W, 6);
+
+      ctx.fillStyle = "#171A18";
+      ctx.fillRect(0, footerY, W, 114);
+
+      ctx.fillStyle = "#D5A52B";
+      ctx.font = "700 20px Inter, Arial, sans-serif";
+      ctx.fillText("CONSULTAS Y COTIZACIONES POR WHATSAPP", 56, footerY + 44);
+
+      ctx.fillStyle = "#FFFFFF";
+      ctx.font = "900 32px Inter, Arial, sans-serif";
+      ctx.fillText(config.phoneDisplay, 56, footerY + 84);
+
+      ctx.textAlign = "right";
+      ctx.fillStyle = "#20B9EF";
+      ctx.font = "800 21px Inter, Arial, sans-serif";
+      ctx.fillText("ENVÍOS A TODO NICARAGUA", W - 56, footerY + 46);
+
+      ctx.fillStyle = "#D1D5DB";
+      ctx.font = "500 19px Inter, Arial, sans-serif";
+      ctx.fillText(config.address, W - 56, footerY + 82);
+      ctx.textAlign = "left";
+
+      return new Promise(resolve => canvas.toBlob(blob => resolve(blob), "image/png"));
+    }
+
+    async function downloadTechnicalSheet(id) {
+      const p = products.find(item => item.id === id);
+      if (!p) return;
+      showToast("Generando ficha técnica en HD...");
+
+      const blob = await generateTechnicalSheetBlob(p);
+      if (!blob) {
+        showToast("No se pudo generar la imagen");
+        return;
+      }
+
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `ficha-${p.slug || p.id}.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1500);
+      showToast("Ficha técnica descargada");
+    }
+
+    async function copyTechnicalSheetImage(id) {
+      const p = products.find(item => item.id === id);
+      if (!p) return;
+      try {
+        showToast("Generando ficha para portapapeles...");
+        const blob = await generateTechnicalSheetBlob(p);
+        await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+        showToast("Imagen copiada. Pégala con Ctrl+V en WhatsApp Web");
+      } catch {
+        downloadTechnicalSheet(id);
+      }
+    }
+
+    async function shareProductWithMedia(id) {
+      const p = products.find(item => item.id === id);
+      if (!p) return;
+      const fichaTexto = buildAdminDispatchText(p);
+      const directUrl = getProductDirectUrl(p);
+      const blob = await generateTechnicalSheetBlob(p);
+
+      if (navigator.share && blob) {
+        try {
+          const file = new File([blob], `ficha-${p.slug}.png`, { type: "image/png" });
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            await navigator.share({ files: [file], title: p.nombre, text: fichaTexto });
+            return;
+          }
+        } catch {}
+        await navigator.share({ title: p.nombre, text: fichaTexto, url: directUrl });
+      } else {
+        downloadTechnicalSheet(id);
+      }
+    }
+
+    // =========================================================================
+    // UTILIDADES DE ENRUTAMIENTO, WHATSAPP Y FORMATEO
+    // =========================================================================
+    function generateSlug(text) {
+      return String(text)
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+    }
+
+    function getProductDirectUrl(p) {
+      const base = `${window.location.origin}${window.location.pathname}`;
+      return `${base}?producto=${encodeURIComponent(p.slug)}`;
+    }
+
+    function buildClientWhatsAppUrl(p) {
+      const cleanNumber = String(config.whatsapp).replace(/\D/g, "");
+      const message =
+        `Hola, CARCASA Jinotega. Estoy interesado en obtener información sobre el siguiente equipo:\n\n` +
+        `• Producto: ${p.nombre}\n` +
+        `• Categoría: ${p.categoria}\n` +
+        `• Marca: ${p.marca || 'Consultar'}\n` +
+        `• Modelo: ${p.modelo || 'Consultar'}\n` +
+        `• Código: ${p.codigo || 'N/A'}\n\n` +
+        `Me gustaría conocer su precio, disponibilidad y opciones de entrega.\n` +
+        `¡Muchas gracias!`;
+
+      return `https://wa.me/${cleanNumber}?text=${encodeURIComponent(message)}`;
+    }
+
+    function buildAdminDispatchText(p) {
+      const link = getProductDirectUrl(p);
+      const formattedPrice = formatProductPrice(p);
+      return `*CARCASA JINOTEGA*\n` +
+        `*${p.nombre.toUpperCase()}*\n` +
+        `▪️ Categoría: ${p.categoria}\n` +
+        `${p.marca ? `▪️ Marca: ${p.marca}\n` : ''}` +
+        `${p.modelo ? `▪️ Modelo: ${p.modelo}\n` : ''}` +
+        `${p.codigo ? `▪️ Código: ${p.codigo}\n` : ''}` +
+        `${(p.specs || []).map(s => `▪️ ${s}`).join('\n')}\n` +
+        `${formattedPrice ? `💰 Precio: ${formattedPrice}\n` : ''}` +
+        `${p.disponibilidad ? `📦 Disponibilidad: ${p.disponibilidad}\n` : ''}` +
+        `\n🔗 Ver ficha oficial: ${link}`;
+    }
+
+    // =========================================================================
+    // INICIALIZACIÓN Y PERSISTENCIA (SUPABASE / LOCALSTORAGE)
+    // =========================================================================
+    async function init() {
+      initSupabaseClient();
+      updateSupabaseStatusUI();
+
+      if (sb) {
+        await loadDataFromSupabase();
+      }
+
+      applyConfigToUI();
+      renderCategories();
+      populateFilterSelects();
+      renderCatalog();
+      updateAdminStateUI();
+      lucide.createIcons();
+
+      // Enrutamiento por slug en URL (?producto=slug)
+      const params = new URLSearchParams(window.location.search);
+      let targetSlug = params.get("producto");
+      if (!targetSlug && window.location.pathname.includes("/producto/")) {
+        targetSlug = window.location.pathname.split("/producto/")[1];
+      }
+      if (targetSlug) {
+        const found = products.find(p => p.slug === targetSlug || p.codigo === targetSlug);
+        if (found) openProductDetail(found.id, false);
+      }
+    }
+
+    async function loadDataFromSupabase() {
+      if (!sb) return;
+      try {
+        const { data: cfgData } = await sb.from('configuracion').select('*').eq('id', 'main').single();
+        if (cfgData) {
+          config = {
+            whatsapp: cfgData.whatsapp,
+            phoneDisplay: cfgData.phone_display,
+            email: cfgData.email,
+            schedule: cfgData.schedule,
+            address: cfgData.address,
+            facebook: cfgData.facebook,
+            heroTitle: cfgData.hero_title,
+            heroSubtitle: cfgData.hero_subtitle
+          };
+        }
+
+        const { data: catData } = await sb.from('categorias').select('*').order('id', { ascending: true });
+        if (catData && catData.length > 0) {
+          categories = catData.map(c => ({
+            id: c.id,
+            nombre: c.nombre,
+            desc: c.descripcion,
+            img: c.imagen
+          }));
+        }
+
+        const { data: prodData } = await sb.from('productos').select('*').order('id', { ascending: false });
+        if (prodData && prodData.length > 0) {
+          products = prodData.map(p => ({
+            id: p.id,
+            slug: p.slug,
+            codigo: p.codigo,
+            nombre: p.nombre,
+            marca: p.marca,
+            modelo: p.modelo,
+            categoria: p.categoria,
+            descripcion: p.descripcion,
+            specs: Array.isArray(p.specs) ? p.specs : [],
+            moneda: p.moneda || '$',
+            precio: p.precio,
+            disponibilidad: p.disponibilidad || 'Disponible',
+            destacado: !!p.destacado,
+            activo: p.activo !== false,
+            imagenes: Array.isArray(p.imagenes) ? p.imagenes : []
+          }));
+        }
+
+        saveAllStateLocal();
+      } catch (err) {
+        console.warn("Aviso al cargar desde Supabase, usando estado local:", err);
+      }
+    }
+
+    function saveAllStateLocal() {
+      localStorage.setItem("carcasa_cat_v7", JSON.stringify(categories));
+      localStorage.setItem("carcasa_prod_v7", JSON.stringify(products));
+      localStorage.setItem("carcasa_cfg_v7", JSON.stringify(config));
+    }
+
+    function updateSupabaseStatusUI() {
+      const badge = document.getElementById("supabaseStatusBadge");
+      const indicator = document.getElementById("supabaseIndicator");
+      const urlInput = document.getElementById("cfgSupabaseUrl");
+      const keyInput = document.getElementById("cfgSupabaseKey");
+
+      if (urlInput) urlInput.value = SUPABASE_URL;
+      if (keyInput) keyInput.value = SUPABASE_ANON_KEY;
+
+      if (sb) {
+        if (badge) {
+          badge.textContent = "Supabase Conectado";
+          badge.className = "text-[10px] bg-emerald-900 text-emerald-300 font-bold px-2 py-0.5 rounded-full";
+        }
+        if (indicator) {
+          indicator.textContent = "Conectado a PostgreSQL";
+          indicator.className = "px-2.5 py-1 rounded font-bold text-xs bg-emerald-100 text-emerald-800";
+        }
+      } else {
+        if (badge) {
+          badge.textContent = "Modo Local";
+          badge.className = "text-[10px] bg-white/10 text-gray-300 font-normal px-2 py-0.5 rounded-full";
+        }
+        if (indicator) {
+          indicator.textContent = "Modo Local (localStorage)";
+          indicator.className = "px-2.5 py-1 rounded font-bold text-xs bg-amber-100 text-amber-800";
+        }
+      }
+    }
+
+    function syncSearch(val) {
+      document.getElementById("headerSearchInput").value = val;
+      document.getElementById("searchInput").value = val;
+      renderCatalog();
+    }
+
+    function applyConfigToUI() {
+      const cleanWa = String(config.whatsapp).replace(/\D/g, "");
+      const waBase = `https://wa.me/${cleanWa}`;
+
+      document.getElementById("topAddress").textContent = config.address;
+      document.getElementById("topSchedule").textContent = config.schedule;
+      document.getElementById("contactAddress").textContent = config.address;
+      document.getElementById("footerAddress").textContent = config.address;
+      document.getElementById("contactEmail").textContent = config.email;
+      document.getElementById("footerEmail").textContent = config.email;
+      document.getElementById("contactSchedule").textContent = config.schedule;
+
+      document.getElementById("headerWhatsappBtn").href = waBase;
+      document.getElementById("footerWaLink").href = waBase;
+      document.getElementById("footerFbLink").href = config.facebook;
+
+      const contactPhoneLink = document.getElementById("contactPhoneLink");
+      contactPhoneLink.href = waBase;
+      contactPhoneLink.textContent = config.phoneDisplay;
+      document.getElementById("footerPhone").textContent = config.phoneDisplay;
+
+      document.getElementById("heroTitle").textContent = config.heroTitle;
+      document.getElementById("heroSubtitle").textContent = config.heroSubtitle;
+      document.getElementById("heroAdvisorBtn").href = `${waBase}?text=${encodeURIComponent("Hola, CARCASA. Me gustaría recibir asesoramiento técnico sobre sus equipos.")}`;
+
+      document.getElementById("cfgWhatsapp").value = cleanWa;
+      document.getElementById("cfgPhoneDisplay").value = config.phoneDisplay;
+      document.getElementById("cfgEmail").value = config.email;
+      document.getElementById("cfgSchedule").value = config.schedule;
+      document.getElementById("cfgAddress").value = config.address;
+      document.getElementById("cfgFacebook").value = config.facebook;
+      document.getElementById("cfgHeroTitle").value = config.heroTitle;
+      document.getElementById("cfgHeroSubtitle").value = config.heroSubtitle;
+    }
+
+    // =========================================================================
+    // CATEGORÍAS Y FILTROS
+    // =========================================================================
+    function renderQuickCategoryPills() {
+      const selected = document.getElementById("filterCategory").value;
+      const allCats = ["Todas", ...categories.map(c => c.nombre)];
+      document.getElementById("quickCategoryPills").innerHTML = allCats.map(cat => `
+        <button onclick="selectCategoryFilter('${cat}')" 
+                class="px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition border ${
+                  selected === cat 
+                    ? 'bg-carcasa-green text-white border-carcasa-green shadow-sm' 
+                    : 'bg-white text-carcasa-black border-gray-200 hover:border-carcasa-green'
+                }">
+          ${cat === "Todas" ? "Todos" : cat}
+        </button>
+      `).join("");
+    }
+
+    function renderCategories() {
+      renderQuickCategoryPills();
+      document.getElementById("categoriesGrid").innerHTML = categories.map(cat => `
+        <a href="#catalogo" onclick="selectCategoryFilter('${cat.nombre}')" 
+           class="group bg-carcasa-gray rounded-xl overflow-hidden border border-gray-200 hover:border-carcasa-green hover:shadow-md transition flex flex-col">
+          <div class="h-28 bg-carcasa-black overflow-hidden relative">
+            <img src="${cat.img}" alt="${cat.nombre}" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition duration-300 opacity-90">
+          </div>
+          <div class="p-3 bg-white flex-1 flex flex-col justify-between">
+            <h3 class="font-bold text-carcasa-black text-xs group-hover:text-carcasa-green transition leading-snug">${cat.nombre}</h3>
+            <span class="text-[11px] font-bold text-carcasa-green mt-2 inline-flex items-center">
+              Explorar <i data-lucide="chevron-right" class="w-3 h-3 ml-0.5"></i>
+            </span>
+          </div>
+        </a>
+      `).join("");
+
+      document.getElementById("footerCategories").innerHTML = categories.slice(0, 6).map(cat => `
+        <li><a href="#catalogo" onclick="selectCategoryFilter('${cat.nombre}')" class="hover:text-white transition">${cat.nombre}</a></li>
+      `).join("");
+    }
+
+    function selectCategoryFilter(catName) {
+      document.getElementById("filterCategory").value = catName;
+      renderCatalog();
+    }
+
+    function populateFilterSelects() {
+      const catSelect = document.getElementById("filterCategory");
+      const prodCatSelect = document.getElementById("prodCategoria");
+      const currentVal = catSelect.value;
+
+      const options = categories.map(c => `<option value="${c.nombre}">${c.nombre}</option>`).join("");
+      catSelect.innerHTML = `<option value="Todas">Todas las categorías</option>` + options;
+      prodCatSelect.innerHTML = options;
+      if ([...catSelect.options].some(o => o.value === currentVal)) catSelect.value = currentVal;
+
+      const brands = [...new Set(products.filter(p => p.activo && p.marca).map(p => p.marca))];
+      document.getElementById("filterBrand").innerHTML = `<option value="Todas">Todas las marcas</option>` + 
+        brands.map(b => `<option value="${b}">${b}</option>`).join("");
+    }
+
+    // =========================================================================
+    // CATÁLOGO DIGITAL DE PRODUCTOS
+    // =========================================================================
+    function setQuickTab(tab) {
+      quickTab = tab;
+      ["todos", "destacados"].forEach(t => {
+        const btn = document.getElementById(`tab-${t}`);
+        if (t === tab) {
+          btn.className = "px-3.5 py-1.5 rounded-lg text-xs font-bold bg-carcasa-green text-white transition";
+        } else {
+          btn.className = "px-3.5 py-1.5 rounded-lg text-xs font-bold bg-carcasa-gray text-carcasa-black hover:bg-gray-200 transition flex items-center gap-1";
+        }
+      });
+      renderCatalog();
+    }
+
+    function resetFilters() {
+      document.getElementById("headerSearchInput").value = "";
+      document.getElementById("searchInput").value = "";
+      document.getElementById("filterCategory").value = "Todas";
+      document.getElementById("filterBrand").value = "Todas";
+      document.getElementById("sortOrder").value = "recientes";
+      quickTab = "todos";
+      renderCatalog();
+    }
+
+    function loadMoreProducts() {
+      visibleLimit += 6;
+      renderCatalog();
+    }
+
+    function renderCatalog() {
+      renderQuickCategoryPills();
+      const q = document.getElementById("searchInput").value.toLowerCase().trim();
+      const cat = document.getElementById("filterCategory").value;
+      const brand = document.getElementById("filterBrand").value;
+      const sort = document.getElementById("sortOrder").value;
+
+      let filtered = products.filter(p => {
+        if (!isAdmin && !p.activo) return false;
+        if (quickTab === "destacados" && !p.destacado) return false;
+        if (cat !== "Todas" && p.categoria !== cat) return false;
+        if (brand !== "Todas" && p.marca !== brand) return false;
+        if (q) {
+          const matchName = (p.nombre || "").toLowerCase().includes(q);
+          const matchBrand = (p.marca || "").toLowerCase().includes(q);
+          const matchModel = (p.modelo || "").toLowerCase().includes(q);
+          const matchCode = (p.codigo || "").toLowerCase().includes(q);
+          const matchCat = (p.categoria || "").toLowerCase().includes(q);
+          const matchDesc = (p.descripcion || "").toLowerCase().includes(q);
+          if (!matchName && !matchBrand && !matchModel && !matchCode && !matchCat && !matchDesc) return false;
+        }
+        return true;
+      });
+
+      if (sort === "nombre_asc") {
+        filtered.sort((a, b) => a.nombre.localeCompare(b.nombre));
+      } else if (sort === "nombre_desc") {
+        filtered.sort((a, b) => b.nombre.localeCompare(a.nombre));
+      } else {
+        filtered.sort((a, b) => b.id - a.id);
+      }
+
+      const counter = document.getElementById("catalogCounter");
+      counter.textContent = `${filtered.length} equipo${filtered.length === 1 ? '' : 's'} disponible${filtered.length === 1 ? '' : 's'}`;
+
+      const btnReset = document.getElementById("btnResetFilters");
+      const hasFilters = q || cat !== "Todas" || brand !== "Todas" || quickTab !== "todos";
+      btnReset.classList.toggle("hidden", !hasFilters);
+
+      const toShow = filtered.slice(0, visibleLimit);
+      const grid = document.getElementById("productsGrid");
+      const loadMoreWrap = document.getElementById("loadMoreWrapper");
+      loadMoreWrap.classList.toggle("hidden", filtered.length <= visibleLimit);
+
+      if (toShow.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-full py-12 text-center bg-white rounded-2xl border border-gray-200 p-8">
+            <i data-lucide="package-search" class="w-12 h-12 text-gray-400 mx-auto mb-3"></i>
+            <h3 class="font-bold text-base text-carcasa-black">No se encontraron equipos</h3>
+            <p class="text-xs text-gray-500 mt-1 max-w-sm mx-auto">No hay maquinaria que coincida con tus criterios de búsqueda o filtros seleccionados.</p>
+            <button onclick="resetFilters()" class="mt-4 bg-carcasa-green text-white text-xs font-bold px-4 py-2 rounded-lg">
+              Ver todos los equipos
+            </button>
+          </div>
+        `;
+        lucide.createIcons();
+        return;
+      }
+
+      grid.innerHTML = toShow.map(p => {
+        const formattedPrice = formatProductPrice(p);
+        const mainImg = (p.imagenes && p.imagenes.length) ? p.imagenes[0] : "https://placehold.co/800x600?text=CARCASA";
+
+        const cardFooterHtml = !isAdmin ? `
+          <div class="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between gap-2">
+            <button onclick="openProductDetail(${p.id})" class="text-carcasa-black hover:text-carcasa-green text-xs font-bold inline-flex items-center">
+              Ficha Técnica <i data-lucide="arrow-right" class="w-3.5 h-3.5 ml-1"></i>
+            </button>
+            <a href="${buildClientWhatsAppUrl(p)}" target="_blank" class="inline-flex items-center gap-1.5 bg-carcasa-green hover:bg-carcasa-greenDark text-white text-xs font-bold px-3 py-1.5 rounded-lg transition shadow-sm">
+              <i data-lucide="message-circle" class="w-3.5 h-3.5"></i>
+              <span>Consultar</span>
+            </a>
+          </div>
+        ` : `
+          <div class="mt-4 pt-3 border-t border-gray-100 space-y-2">
+            <div class="flex items-center justify-between gap-2">
+              <button onclick="openProductDetail(${p.id})" class="text-carcasa-black hover:text-carcasa-green text-xs font-bold inline-flex items-center">
+                Ver Ficha <i data-lucide="arrow-right" class="w-3.5 h-3.5 ml-1"></i>
+              </button>
+              <div class="flex gap-1.5">
+                <button onclick="downloadTechnicalSheet(${p.id})" title="Descargar PNG" class="p-1.5 bg-carcasa-black text-carcasa-gold hover:bg-black rounded-md">
+                  <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                </button>
+                <button onclick="copyTechnicalSheetImage(${p.id})" title="Copiar imagen" class="p-1.5 bg-carcasa-green text-white hover:bg-carcasa-greenDark rounded-md">
+                  <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                </button>
+                <a href="https://api.whatsapp.com/send?text=${encodeURIComponent(buildAdminDispatchText(p))}" target="_blank" title="Enviar WhatsApp" class="p-1.5 bg-emerald-600 text-white hover:bg-emerald-700 rounded-md">
+                  <i data-lucide="send" class="w-3.5 h-3.5"></i>
+                </a>
+              </div>
+            </div>
+            <div class="flex justify-end gap-2 pt-1 border-t border-gray-100 text-[11px]">
+              <button onclick="openAdminPanel('productos'); editProduct(${p.id});" class="text-carcasa-green font-bold hover:underline">
+                Editar Equipo
+              </button>
+            </div>
+          </div>
+        `;
+
+        return `
+          <article class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm hover:shadow-md hover:border-carcasa-green/60 transition flex flex-col group">
+            <div class="relative h-60 bg-carcasa-gray overflow-hidden cursor-pointer" onclick="openProductDetail(${p.id})">
+              <img src="${mainImg}" alt="${p.nombre}" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+              
+              <!-- Etiquetas esquina superior izquierda -->
+              <div class="absolute top-3 left-3 flex flex-wrap gap-1.5">
+                ${p.destacado ? `<span class="bg-carcasa-gold text-carcasa-black text-[10px] font-extrabold px-2.5 py-0.5 rounded uppercase shadow-sm">Destacado</span>` : ''}
+                ${p.disponibilidad ? `<span class="bg-carcasa-black/85 text-white text-[10px] font-semibold px-2.5 py-0.5 rounded">${p.disponibilidad}</span>` : ''}
+              </div>
+
+              <!-- Código esquina inferior izquierda -->
+              ${p.codigo ? `<span class="absolute bottom-2.5 left-2.5 bg-white/95 text-carcasa-black font-mono text-[10px] font-bold px-2 py-0.5 rounded shadow-sm">${p.codigo}</span>` : ''}
+
+              <!-- PRECIO DESTACADO EN LA ESQUINA INFERIOR DERECHA DE LA IMAGEN -->
+              ${formattedPrice ? `
+                <span class="absolute bottom-2.5 right-2.5 bg-carcasa-green text-white text-sm font-black px-3 py-1 rounded-lg shadow-lg border border-white/25 tracking-tight">
+                  ${formattedPrice}
+                </span>
+              ` : ''}
+            </div>
+
+            <div class="p-5 flex-1 flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between gap-2 mb-1">
+                  <span class="text-[11px] font-extrabold uppercase tracking-wider text-carcasa-green">${p.categoria}</span>
+                  ${p.marca ? `<span class="text-[11px] font-semibold text-gray-400">${p.marca} ${p.modelo ? '• ' + p.modelo : ''}</span>` : ''}
+                </div>
+
+                <h3 onclick="openProductDetail(${p.id})" class="font-extrabold text-carcasa-black text-lg leading-snug cursor-pointer hover:text-carcasa-green transition">
+                  ${p.nombre}
+                </h3>
+
+                <p class="text-xs text-gray-600 mt-2 line-clamp-2 leading-relaxed">
+                  ${p.descripcion}
+                </p>
+              </div>
+
+              ${cardFooterHtml}
+            </div>
+          </article>
+        `;
+      }).join("");
+
+      lucide.createIcons();
+    }
+
+    // =========================================================================
+    // FICHA INDIVIDUAL DEL PRODUCTO Y COMPARTIR
+    // =========================================================================
+    function openProductDetail(id, updateHistory = true) {
+      const p = products.find(item => item.id === id);
+      if (!p) return;
+
+      if (updateHistory) {
+        window.history.pushState({ producto: p.slug }, "", `?producto=${encodeURIComponent(p.slug)}`);
+      }
+
+      const imgs = (p.imagenes && p.imagenes.length) ? p.imagenes : ["https://placehold.co/800x600?text=CARCASA"];
+      const formattedPrice = formatProductPrice(p);
+
+      document.getElementById("modalMainImage").src = imgs[0];
+      document.getElementById("modalProductCategory").textContent = p.categoria;
+      document.getElementById("modalProductSlug").textContent = `/producto/${p.slug}`;
+      document.getElementById("modalBrand").textContent = p.marca || "";
+      document.getElementById("modalModel").textContent = p.modelo || "";
+      document.getElementById("modalModelSeparator").classList.toggle("hidden", !p.marca || !p.modelo);
+      document.getElementById("modalTitle").textContent = p.nombre;
+      document.getElementById("modalDescription").textContent = p.descripcion;
+
+      const codeBadge = document.getElementById("modalCodeBadge");
+      if (p.codigo) {
+        codeBadge.textContent = `Cód: ${p.codigo}`;
+        codeBadge.classList.remove("hidden");
+      } else {
+        codeBadge.classList.add("hidden");
+      }
+
+      const priceWrap = document.getElementById("modalPriceWrapper");
+      const imgPriceBadge = document.getElementById("modalImagePriceBadge");
+      if (formattedPrice) {
+        priceWrap.classList.remove("hidden");
+        document.getElementById("modalPrice").textContent = formattedPrice;
+        imgPriceBadge.classList.remove("hidden");
+        imgPriceBadge.textContent = formattedPrice;
+      } else {
+        priceWrap.classList.add("hidden");
+        imgPriceBadge.classList.add("hidden");
+      }
+
+      const badge = document.getElementById("modalAvailabilityBadge");
+      if (p.disponibilidad) {
+        badge.classList.remove("hidden");
+        badge.textContent = p.disponibilidad;
+        badge.className = `absolute top-3 left-3 text-xs font-bold px-3 py-1 rounded-md shadow ${
+          p.disponibilidad === "Disponible" ? "bg-carcasa-green text-white" : "bg-carcasa-gold text-carcasa-black"
+        }`;
+      } else {
+        badge.classList.add("hidden");
+      }
+
+      document.getElementById("modalThumbnails").innerHTML = imgs.length > 1 ? imgs.map(url => `
+        <img src="${url}" onclick="document.getElementById('modalMainImage').src='${url}'" 
+             class="h-14 w-14 rounded-lg object-cover border-2 border-transparent hover:border-carcasa-green cursor-pointer">
+      `).join("") : "";
+
+      const specsHtml = (p.specs && p.specs.length) ? p.specs.map(line => {
+        const parts = line.split(":");
+        if (parts.length > 1) {
+          return `<div class="flex justify-between border-b border-gray-200/80 pb-1.5 last:border-0 last:pb-0">
+                    <span class="text-gray-500 font-medium">${parts[0].trim()}</span>
+                    <span class="font-bold text-carcasa-black text-right">${parts.slice(1).join(":").trim()}</span>
+                  </div>`;
+        }
+        return `<div class="font-medium text-carcasa-black">• ${line}</div>`;
+      }).join("") : `<p class="text-gray-500">Consultar especificaciones completas con nuestros asesores.</p>`;
+      document.getElementById("modalSpecsList").innerHTML = specsHtml;
+
+      document.getElementById("clientModalActions").classList.toggle("hidden", isAdmin);
+      document.getElementById("adminModalDispatch").classList.toggle("hidden", !isAdmin);
+
+      const directUrl = getProductDirectUrl(p);
+
+      if (!isAdmin) {
+        document.getElementById("btnProductWhatsapp").href = buildClientWhatsAppUrl(p);
+        document.getElementById("btnClientCopyLink").onclick = () => {
+          navigator.clipboard.writeText(directUrl);
+          showToast("Enlace directo copiado");
+        };
+        document.getElementById("btnClientShareNative").onclick = async () => {
+          if (navigator.share) {
+            await navigator.share({
+              title: `${p.nombre} - CARCASA Jinotega`,
+              text: `Mira este equipo en CARCASA Jinotega: ${p.nombre}`,
+              url: directUrl
+            });
+          } else {
+            navigator.clipboard.writeText(directUrl);
+            showToast("Enlace del equipo copiado");
+          }
+        };
+      } else {
+        document.getElementById("btnDownloadTechSheet").onclick = () => downloadTechnicalSheet(p.id);
+        document.getElementById("btnDispatchWA").href = `https://api.whatsapp.com/send?text=${encodeURIComponent(buildAdminDispatchText(p))}`;
+        document.getElementById("btnDispatchNativeFile").onclick = () => shareProductWithMedia(p.id);
+        document.getElementById("btnDispatchCopySheetImg").onclick = () => copyTechnicalSheetImage(p.id);
+        document.getElementById("btnModalEditProduct").onclick = () => {
+          closeProductModal();
+          openAdminPanel("productos");
+          editProduct(p.id);
+        };
+      }
+
+      openModal("productModal");
+      lucide.createIcons();
+    }
+
+    function closeProductModal() {
+      closeModal("productModal");
+      if (window.location.search.includes("producto=")) {
+        window.history.pushState({}, "", window.location.pathname);
+      }
+    }
+
+    function shareCatalogLink() {
+      const url = `${window.location.origin}${window.location.pathname}`;
+      if (navigator.share) {
+        navigator.share({
+          title: "Catálogo Digital CARCASA Jinotega",
+          text: "Consulta nuestro catálogo de maquinaria agrícola, industrial y repuestos:",
+          url
+        });
+      } else {
+        navigator.clipboard.writeText(url);
+        showToast("Enlace del catálogo copiado");
+      }
+    }
+
+    // =========================================================================
+    // PANEL ADMINISTRATIVO Y AUTENTICACIÓN
+    // =========================================================================
+    function handleAdminAccess() {
+      if (isAdmin) openAdminPanel("productos");
+      else openModal("loginModal");
+    }
+
+    document.getElementById("loginForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = document.getElementById("loginEmail").value.trim();
+      const pass = document.getElementById("loginPass").value;
+
+      if (sb) {
+        const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+        if (error) {
+          showToast(`Error de acceso: ${error.message}`);
+          return;
+        }
+      }
+
+      isAdmin = true;
+      sessionStorage.setItem("carcasa_admin_v7", "true");
+      closeModal("loginModal");
+      updateAdminStateUI();
+      renderCatalog();
+      openAdminPanel("productos");
+      showToast("Sesión de Administrador iniciada");
+    });
+
+    async function logoutAdmin() {
+      if (sb) {
+        await sb.auth.signOut();
+      }
+      isAdmin = false;
+      sessionStorage.removeItem("carcasa_admin_v7");
+      closeModal("adminPanelModal");
+      updateAdminStateUI();
+      renderCatalog();
+      showToast("Sesión cerrada");
+    }
+
+    function updateAdminStateUI() {
+      const topBadge = document.getElementById("adminBadgeTop");
+      const headerBtn = document.getElementById("headerAdminAddBtn");
+      topBadge.classList.toggle("hidden", !isAdmin);
+      topBadge.classList.toggle("inline-flex", isAdmin);
+      headerBtn.classList.toggle("hidden", !isAdmin);
+      headerBtn.classList.toggle("inline-flex", isAdmin);
+    }
+
+    function openAdminPanel(tab = "productos", openForm = false) {
+      if (!isAdmin) {
+        openModal("loginModal");
+        return;
+      }
+      switchAdminTab(tab);
+      renderAdminProductsTable();
+      renderAdminCategoriesList();
+      updateSupabaseStatusUI();
+      if (openForm) {
+        toggleProductForm(true);
+      }
+      openModal("adminPanelModal");
+      lucide.createIcons();
+    }
+
+    function switchAdminTab(tab) {
+      ["productos", "categorias", "configuracion", "supabase"].forEach(t => {
+        const view = document.getElementById(`adminView-${t}`);
+        const tabBtn = document.getElementById(`admTab-${t}`);
+        if (view) view.classList.toggle("hidden", t !== tab);
+        if (tabBtn) {
+          if (t === tab) {
+            tabBtn.className = "py-2.5 px-4 border-b-2 border-carcasa-green text-carcasa-green";
+          } else {
+            tabBtn.className = "py-2.5 px-4 border-b-2 border-transparent text-gray-500 hover:text-carcasa-black";
+          }
+        }
+      });
+      lucide.createIcons();
+    }
+
+    function toggleProductForm(show) {
+      const f = document.getElementById("adminProductForm");
+      f.classList.toggle("hidden", !show);
+      if (show && !document.getElementById("editProductId").value) {
+        f.reset();
+        document.getElementById("productFormTitle").textContent = "Nuevo Equipo";
+        document.getElementById("prodMoneda").value = "$";
+        document.getElementById("prodActivo").checked = true;
+      }
+      if (!show) document.getElementById("editProductId").value = "";
+    }
+
+    function renderAdminProductsTable() {
+      document.getElementById("adminProductsTable").innerHTML = products.map(p => {
+        const formattedPrice = formatProductPrice(p);
+        return `
+          <tr class="hover:bg-gray-50">
+            <td class="p-3">
+              <div class="font-bold text-carcasa-black">${p.nombre}</div>
+              <div class="text-[11px] font-mono text-gray-400">/producto/${p.slug}</div>
+            </td>
+            <td class="p-3 text-gray-600">${p.categoria}</td>
+            <td class="p-3 font-bold text-carcasa-green">${formattedPrice || '<span class="text-gray-400 font-normal">Sin precio</span>'}</td>
+            <td class="p-3">
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold ${p.activo ? 'bg-green-100 text-carcasa-green' : 'bg-gray-200 text-gray-600'}">
+                ${p.activo ? 'Activo' : 'Inactivo'}
+              </span>
+            </td>
+            <td class="p-3 text-right space-x-2">
+              <button onclick="downloadTechnicalSheet(${p.id})" class="text-carcasa-black font-bold hover:underline">Descargar PNG</button>
+              <button onclick="editProduct(${p.id})" class="text-carcasa-green font-bold hover:underline">Editar</button>
+              <button onclick="deleteProduct(${p.id})" class="text-red-600 font-bold hover:underline">Eliminar</button>
+            </td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    function editProduct(id) {
+      const p = products.find(item => item.id === id);
+      if (!p) return;
+      document.getElementById("editProductId").value = p.id;
+      document.getElementById("productFormTitle").textContent = `Editando: ${p.nombre}`;
+      document.getElementById("prodNombre").value = p.nombre;
+      document.getElementById("prodMarca").value = p.marca || "";
+      document.getElementById("prodModelo").value = p.modelo || "";
+      document.getElementById("prodCategoria").value = p.categoria;
+      document.getElementById("prodCodigo").value = p.codigo || "";
+      document.getElementById("prodMoneda").value = p.moneda || "$";
+      document.getElementById("prodPrecio").value = p.precio || "";
+      document.getElementById("prodDisponibilidad").value = p.disponibilidad || "Disponible";
+      document.getElementById("prodDescripcion").value = p.descripcion;
+      document.getElementById("prodSpecs").value = (p.specs || []).join("\n");
+      document.getElementById("prodImageUrls").value = (p.imagenes || []).join(", ");
+      document.getElementById("prodActivo").checked = p.activo;
+      document.getElementById("prodDestacado").checked = p.destacado;
+      toggleProductForm(true);
+    }
+
+    document.getElementById("adminProductForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const editId = document.getElementById("editProductId").value;
+      const files = document.getElementById("prodFiles").files;
+      let urls = document.getElementById("prodImageUrls").value.split(",").map(s => s.trim()).filter(Boolean);
+
+      showToast("Guardando equipo...");
+
+      // Subida de imágenes a Supabase Storage (o DataURL si no hay Supabase)
+      if (files && files.length > 0) {
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i];
+          if (sb) {
+            try {
+              const fileExt = file.name.split('.').pop();
+              const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
+              const { error: uploadError } = await sb.storage.from('equipos').upload(fileName, file);
+              if (!uploadError) {
+                const { data: publicUrlData } = sb.storage.from('equipos').getPublicUrl(fileName);
+                if (publicUrlData && publicUrlData.publicUrl) {
+                  urls.unshift(publicUrlData.publicUrl);
+                  continue;
+                }
+              }
+            } catch (err) {
+              console.warn("Fallo subida a storage, usando fallback local:", err);
+            }
+          }
+          // Fallback a Base64 Data URL
+          const dataUrl = await new Promise(res => {
+            const r = new FileReader();
+            r.onload = () => res(r.result);
+            r.readAsDataURL(file);
+          });
+          urls.unshift(dataUrl);
+        }
+      }
+
+      if (urls.length === 0) {
+        urls = ["https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=800&q=80"];
+      }
+
+      const nombre = document.getElementById("prodNombre").value.trim();
+      const baseSlug = generateSlug(nombre);
+      const isDuplicateSlug = products.some(p => p.slug === baseSlug && p.id !== Number(editId));
+      const finalSlug = isDuplicateSlug ? `${baseSlug}-${Date.now().toString().slice(-4)}` : baseSlug;
+
+      const productData = {
+        id: editId ? Number(editId) : Date.now(),
+        slug: finalSlug,
+        codigo: document.getElementById("prodCodigo").value.trim(),
+        nombre,
+        marca: document.getElementById("prodMarca").value.trim(),
+        modelo: document.getElementById("prodModelo").value.trim(),
+        categoria: document.getElementById("prodCategoria").value,
+        moneda: document.getElementById("prodMoneda").value,
+        precio: document.getElementById("prodPrecio").value.trim(),
+        disponibilidad: document.getElementById("prodDisponibilidad").value,
+        descripcion: document.getElementById("prodDescripcion").value.trim(),
+        specs: document.getElementById("prodSpecs").value.split("\n").map(s => s.trim()).filter(Boolean),
+        imagenes: urls,
+        activo: document.getElementById("prodActivo").checked,
+        destacado: document.getElementById("prodDestacado").checked
+      };
+
+      if (sb) {
+        try {
+          const dbPayload = {
+            slug: productData.slug,
+            codigo: productData.codigo,
+            nombre: productData.nombre,
+            marca: productData.marca,
+            modelo: productData.modelo,
+            categoria: productData.categoria,
+            moneda: productData.moneda,
+            precio: productData.precio,
+            disponibilidad: productData.disponibilidad,
+            descripcion: productData.descripcion,
+            specs: productData.specs,
+            imagenes: productData.imagenes,
+            activo: productData.activo,
+            destacado: productData.destacado
+          };
+          if (editId) {
+            await sb.from('productos').update(dbPayload).eq('id', Number(editId));
+          } else {
+            const { data: inserted } = await sb.from('productos').insert([dbPayload]).select().single();
+            if (inserted) productData.id = inserted.id;
+          }
+        } catch (dbErr) {
+          console.warn("Aviso al guardar en Supabase:", dbErr);
+        }
+      }
+
+      if (editId) {
+        const idx = products.findIndex(p => p.id === Number(editId));
+        if (idx !== -1) products[idx] = productData;
+      } else {
+        products.unshift(productData);
+      }
+
+      saveAllStateLocal();
+      populateFilterSelects();
+      renderCatalog();
+      renderAdminProductsTable();
+      toggleProductForm(false);
+      showToast("Equipo guardado con éxito");
+    });
+
+    async function deleteProduct(id) {
+      if (!confirm("¿Deseas eliminar este producto del catálogo?")) return;
+      if (sb) {
+        try {
+          await sb.from('productos').delete().eq('id', id);
+        } catch (err) {
+          console.warn("Aviso al eliminar en Supabase:", err);
+        }
+      }
+      products = products.filter(p => p.id !== id);
+      saveAllStateLocal();
+      renderCatalog();
+      renderAdminProductsTable();
+      showToast("Equipo eliminado");
+    }
+
+    function renderAdminCategoriesList() {
+      document.getElementById("adminCategoriesList").innerHTML = categories.map(c => `
+        <div class="p-3 bg-carcasa-gray rounded-xl border border-gray-200 flex justify-between items-center gap-2">
+          <div><div class="font-bold text-xs">${c.nombre}</div><div class="text-[11px] text-gray-500">${c.desc}</div></div>
+          <button onclick="deleteCategory(${c.id})" class="text-xs text-red-600 font-bold hover:underline">Eliminar</button>
+        </div>
+      `).join("");
+    }
+
+    document.getElementById("adminCategoryForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const newCat = {
+        id: Date.now(),
+        nombre: document.getElementById("catNombre").value.trim(),
+        desc: document.getElementById("catDesc").value.trim(),
+        img: document.getElementById("catImg").value.trim() || "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=600&q=80"
+      };
+
+      if (sb) {
+        try {
+          const { data: inserted } = await sb.from('categorias').insert([{
+            nombre: newCat.nombre,
+            descripcion: newCat.desc,
+            imagen: newCat.img
+          }]).select().single();
+          if (inserted) newCat.id = inserted.id;
+        } catch (err) {
+          console.warn("Aviso al crear categoría en Supabase:", err);
+        }
+      }
+
+      categories.push(newCat);
+      e.target.reset();
+      saveAllStateLocal();
+      renderCategories();
+      populateFilterSelects();
+      renderAdminCategoriesList();
+      showToast("Categoría agregada con éxito");
+    });
+
+    async function deleteCategory(id) {
+      if (!confirm("¿Deseas eliminar esta categoría?")) return;
+      if (sb) {
+        try {
+          await sb.from('categorias').delete().eq('id', id);
+        } catch (err) {
+          console.warn("Aviso al eliminar categoría en Supabase:", err);
+        }
+      }
+      categories = categories.filter(c => c.id !== id);
+      saveAllStateLocal();
+      renderCategories();
+      populateFilterSelects();
+      renderAdminCategoriesList();
+      showToast("Categoría eliminada");
+    }
+
+    document.getElementById("adminConfigForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      config.whatsapp = document.getElementById("cfgWhatsapp").value.replace(/\D/g, "");
+      config.phoneDisplay = document.getElementById("cfgPhoneDisplay").value.trim();
+      config.email = document.getElementById("cfgEmail").value.trim();
+      config.schedule = document.getElementById("cfgSchedule").value.trim();
+      config.address = document.getElementById("cfgAddress").value.trim();
+      config.facebook = document.getElementById("cfgFacebook").value.trim();
+      config.heroTitle = document.getElementById("cfgHeroTitle").value.trim();
+      config.heroSubtitle = document.getElementById("cfgHeroSubtitle").value.trim();
+
+      if (sb) {
+        try {
+          await sb.from('configuracion').upsert({
+            id: 'main',
+            whatsapp: config.whatsapp,
+            phone_display: config.phoneDisplay,
+            email: config.email,
+            schedule: config.schedule,
+            address: config.address,
+            facebook: config.facebook,
+            hero_title: config.heroTitle,
+            hero_subtitle: config.heroSubtitle
+          });
+        } catch (err) {
+          console.warn("Aviso al guardar configuración en Supabase:", err);
+        }
+      }
+
+      saveAllStateLocal();
+      applyConfigToUI();
+      renderCatalog();
+      showToast("Configuración institucional guardada");
+    });
+
+    document.getElementById("adminSupabaseConfigForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const url = document.getElementById("cfgSupabaseUrl").value.trim();
+      const key = document.getElementById("cfgSupabaseKey").value.trim();
+      
+      SUPABASE_URL = url;
+      SUPABASE_ANON_KEY = key;
+      localStorage.setItem("carcasa_sb_url", url);
+      localStorage.setItem("carcasa_sb_key", key);
+
+      initSupabaseClient();
+      updateSupabaseStatusUI();
+
+      if (sb) {
+        loadDataFromSupabase().then(() => {
+          renderCategories();
+          populateFilterSelects();
+          renderCatalog();
+          renderAdminProductsTable();
+          showToast("Conexión con Supabase establecida con éxito");
+        });
+      } else {
+        showToast("Configuración guardada en modo local");
+      }
+    });
+
+    function disconnectSupabase() {
+      SUPABASE_URL = "";
+      SUPABASE_ANON_KEY = "";
+      localStorage.removeItem("carcasa_sb_url");
+      localStorage.removeItem("carcasa_sb_key");
+      sb = null;
+      updateSupabaseStatusUI();
+      showToast("Conexión restablecida a Modo Local");
+    }
+
+    document.getElementById("contactForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const name = document.getElementById("contactName").value.trim();
+      const phone = document.getElementById("contactClientPhone").value.trim();
+      const msg = document.getElementById("contactMessage").value.trim();
+      const cleanWa = String(config.whatsapp).replace(/\D/g, "");
+      const text = `Hola, CARCASA Jinotega. Mi nombre es ${name} (Tel: ${phone}).\n\nConsulta:\n${msg}`;
+      window.open(`https://wa.me/${cleanWa}?text=${encodeURIComponent(text)}`, "_blank");
+    });
+
+    function toggleMobileMenu() { 
+      document.getElementById("mobileMenu").classList.toggle("hidden"); 
+    }
+    
+    function openModal(id) { 
+      const el = document.getElementById(id); 
+      el.classList.remove("hidden"); 
+      el.classList.add("flex"); 
+    }
+    
+    function closeModal(id) { 
+      const el = document.getElementById(id); 
+      el.classList.add("hidden"); 
+      el.classList.remove("flex"); 
+    }
+    
+    function showToast(text) {
+      const t = document.getElementById("toast");
+      document.getElementById("toastText").textContent = text;
+      t.classList.remove("hidden");
+      t.classList.add("flex");
+      setTimeout(() => { 
+        t.classList.add("hidden"); 
+        t.classList.remove("flex"); 
+      }, 3200);
+    }
+
+    window.addEventListener("DOMContentLoaded", init);
+  </script>
+</body>
+</html>
