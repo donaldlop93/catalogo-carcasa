@@ -10,8 +10,9 @@
   <!-- Tailwind CSS & Lucide Icons -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
-  <!-- Supabase JS Client v2 -->
+  <!-- Supabase JS Client v2 & jsPDF -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   
   <!-- Tipografía Inter (Google Fonts) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -73,6 +74,9 @@
       </div>
       <div class="flex items-center gap-3">
         <span id="topSchedule" class="hidden sm:inline text-gray-400">Lunes a Sábado: 8:00 AM - 5:30 PM</span>
+        <button id="adminPdfBtnTop" onclick="openCatalogPdfModal()" class="hidden items-center gap-1.5 bg-white/10 hover:bg-white/20 text-white font-bold px-2.5 py-0.5 rounded text-[11px] transition">
+          <i data-lucide="file-text" class="w-3.5 h-3.5 text-carcasa-gold"></i> CATÁLOGO PDF
+        </button>
         <button id="adminBadgeTop" onclick="openAdminPanel('productos')" class="hidden items-center gap-1.5 bg-carcasa-gold text-carcasa-black font-extrabold px-2.5 py-0.5 rounded text-[11px] hover:brightness-105 transition">
           <i data-lucide="shield-check" class="w-3.5 h-3.5"></i> PANEL ADMIN
         </button>
@@ -119,9 +123,15 @@
 
         <!-- Botón WhatsApp + Acceso Rápido Admin + Menú Móvil -->
         <div class="flex items-center gap-2 shrink-0">
+          <button id="headerAdminPdfBtn" onclick="openCatalogPdfModal()" 
+                  class="hidden items-center gap-1.5 bg-carcasa-black text-carcasa-gold hover:bg-black text-xs font-bold px-3 py-2.5 rounded-lg transition shadow-sm border border-carcasa-gold/30">
+            <i data-lucide="file-down" class="w-4 h-4"></i>
+            <span class="hidden sm:inline">Catálogo PDF</span>
+          </button>
+
           <button id="headerAdminAddBtn" onclick="openAdminPanel('productos', true)" 
-                  class="hidden items-center gap-1.5 bg-carcasa-black text-carcasa-gold hover:bg-black text-xs font-bold px-3.5 py-2.5 rounded-lg transition shadow-sm">
-            <i data-lucide="plus" class="w-4 h-4"></i>
+                  class="hidden items-center gap-1.5 bg-carcasa-black text-white hover:bg-black text-xs font-bold px-3.5 py-2.5 rounded-lg transition shadow-sm border border-white/20">
+            <i data-lucide="plus" class="w-4 h-4 text-carcasa-gold"></i>
             <span class="hidden sm:inline">Nuevo Equipo</span>
           </button>
 
@@ -719,6 +729,10 @@
         <button onclick="switchAdminTab('configuracion')" id="admTab-configuracion" class="py-2.5 px-4 border-b-2 border-transparent text-gray-500 hover:text-carcasa-black">
           Configuración y Contacto
         </button>
+        <button onclick="switchAdminTab('pdf-catalog')" id="admTab-pdf-catalog" class="py-2.5 px-4 border-b-2 border-transparent text-gray-500 hover:text-carcasa-black flex items-center gap-1.5 whitespace-nowrap">
+          <i data-lucide="file-text" class="w-3.5 h-3.5 text-carcasa-gold"></i>
+          <span>Descargar Catálogo PDF</span>
+        </button>
         <button onclick="switchAdminTab('supabase')" id="admTab-supabase" class="py-2.5 px-4 border-b-2 border-transparent text-gray-500 hover:text-carcasa-black">
           Conexión Supabase
         </button>
@@ -957,6 +971,108 @@
               </div>
             </form>
           </div>
+        </div>
+
+        <!-- ================= TAB CATÁLOGO EN PDF ================= -->
+        <div id="adminView-pdf-catalog" class="hidden space-y-5 text-xs">
+          <div>
+            <h4 class="font-black text-carcasa-black text-base flex items-center gap-2">
+              <i data-lucide="file-down" class="w-5 h-5 text-carcasa-green"></i>
+              Generador Automático de Catálogo PDF
+            </h4>
+            <p class="text-xs text-gray-500">
+              Genera automáticamente un documento PDF descargable y un enlace web compartible con el diseño editorial oficial de CARCASA (3 equipos por página con características técnicas y fotografías).
+            </p>
+          </div>
+
+          <div class="bg-carcasa-gray p-4 sm:p-5 rounded-xl border border-gray-200 space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block font-bold mb-1 text-carcasa-black">Filtrar por Categoría</label>
+                <select id="pdfFilterCategory" class="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg font-medium text-xs">
+                  <option value="Todas">Todas las categorías (Catálogo General)</option>
+                </select>
+                <p class="text-[11px] text-gray-500 mt-1">Si seleccionas una categoría, se generará el catálogo específico de esa línea (ej. Plantas Eléctricas).</p>
+              </div>
+
+              <div>
+                <label class="block font-bold mb-1 text-carcasa-black">Filtrar por Marca</label>
+                <select id="pdfFilterBrand" class="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg font-medium text-xs">
+                  <option value="Todas">Todas las marcas</option>
+                </select>
+                <p class="text-[11px] text-gray-500 mt-1">Permite exportar únicamente los equipos de un fabricante en específico.</p>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-6 pt-1 border-t border-gray-200 text-xs">
+              <label class="inline-flex items-center gap-2 font-bold cursor-pointer">
+                <input type="checkbox" id="pdfIncludeCover" checked class="rounded text-carcasa-green">
+                <span>Incluir Portada Institucional Oficial</span>
+              </label>
+              <label class="inline-flex items-center gap-2 font-bold cursor-pointer">
+                <input type="checkbox" id="pdfIncludePrices" checked class="rounded text-carcasa-green">
+                <span>Mostrar Precios de Referencia</span>
+              </label>
+            </div>
+
+            <div class="pt-2 flex justify-end">
+              <button id="btnGenerateCatalogPdf" onclick="handleGenerateCatalogPdf()" class="bg-carcasa-green hover:bg-carcasa-greenDark text-white font-bold py-3 px-6 rounded-xl flex items-center gap-2 text-xs sm:text-sm shadow-md transition">
+                <i data-lucide="file-check" class="w-4 h-4"></i>
+                <span>Generar Catálogo PDF y Enlace</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Estado de carga / Progreso -->
+          <div id="pdfLoadingStatus" class="hidden bg-white p-6 rounded-xl border border-gray-200 text-center space-y-3">
+            <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-carcasa-green border-t-transparent"></div>
+            <div class="font-bold text-carcasa-black text-sm" id="pdfProgressText">Generando páginas del catálogo...</div>
+            <p class="text-xs text-gray-500">Procesando fotografías, especificaciones técnicas y maquetación editorial en alta resolución (3 productos por página).</p>
+          </div>
+
+          <!-- Resultado y Enlace Generado -->
+          <div id="pdfResultCard" class="hidden bg-white p-5 sm:p-6 rounded-xl border-2 border-carcasa-green shadow-sm space-y-4">
+            <div class="flex items-center gap-3 text-carcasa-green">
+              <div class="p-2 rounded-lg bg-green-100 text-carcasa-green">
+                <i data-lucide="check-circle" class="w-6 h-6"></i>
+              </div>
+              <div>
+                <h5 class="font-black text-base text-carcasa-black leading-tight">¡Catálogo PDF Generado con Éxito!</h5>
+                <p class="text-xs text-gray-500" id="pdfSummaryInfo">3 productos por página • Formato A4 de Impresión</p>
+              </div>
+            </div>
+
+            <!-- Caja de Enlace -->
+            <div>
+              <label class="block font-bold text-xs text-gray-700 mb-1">Enlace del Catálogo para Ver y Compartir:</label>
+              <div class="flex gap-2">
+                <input type="text" id="pdfGeneratedLinkInput" readonly class="w-full px-3 py-2 bg-carcasa-gray border rounded-lg font-mono text-xs select-all text-gray-700">
+                <button onclick="copyPdfGeneratedLink()" class="px-4 py-2 bg-carcasa-black text-carcasa-gold hover:bg-black font-bold rounded-lg text-xs whitespace-nowrap flex items-center gap-1.5 shadow-sm">
+                  <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                  <span>Copiar</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Botones de Acción Rápida -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-2 border-t border-gray-100">
+              <a id="btnOpenPdfNewTab" href="#" target="_blank" class="flex items-center justify-center gap-2 bg-carcasa-green hover:bg-carcasa-greenDark text-white font-bold py-2.5 px-4 rounded-lg text-xs shadow-sm transition">
+                <i data-lucide="external-link" class="w-4 h-4"></i>
+                <span>Abrir y Ver PDF</span>
+              </a>
+
+              <button id="btnDownloadPdfFile" class="flex items-center justify-center gap-2 bg-gray-100 hover:bg-gray-200 text-carcasa-black font-bold py-2.5 px-4 rounded-lg text-xs border border-gray-300 transition">
+                <i data-lucide="download" class="w-4 h-4"></i>
+                <span>Descargar Archivo PDF</span>
+              </button>
+
+              <a id="btnSharePdfWhatsapp" href="#" target="_blank" class="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-4 rounded-lg text-xs shadow-sm transition">
+                <i data-lucide="message-circle" class="w-4 h-4"></i>
+                <span>Compartir por WhatsApp</span>
+              </a>
+            </div>
+          </div>
+
         </div>
 
       </div>
@@ -1801,6 +1917,7 @@
       const brands = [...new Set(products.filter(p => p.activo && p.marca).map(p => p.marca))];
       document.getElementById("filterBrand").innerHTML = `<option value="Todas">Todas las marcas</option>` + 
         brands.map(b => `<option value="${b}">${b}</option>`).join("");
+      populatePdfFilterSelects();
     }
 
     // =========================================================================
@@ -2155,11 +2272,55 @@
 
     function updateAdminStateUI() {
       const topBadge = document.getElementById("adminBadgeTop");
+      const topPdfBtn = document.getElementById("adminPdfBtnTop");
       const headerBtn = document.getElementById("headerAdminAddBtn");
+      const headerPdfBtn = document.getElementById("headerAdminPdfBtn");
+
       topBadge.classList.toggle("hidden", !isAdmin);
       topBadge.classList.toggle("inline-flex", isAdmin);
+      if (topPdfBtn) {
+        topPdfBtn.classList.toggle("hidden", !isAdmin);
+        topPdfBtn.classList.toggle("inline-flex", isAdmin);
+      }
       headerBtn.classList.toggle("hidden", !isAdmin);
       headerBtn.classList.toggle("inline-flex", isAdmin);
+      if (headerPdfBtn) {
+        headerPdfBtn.classList.toggle("hidden", !isAdmin);
+        headerPdfBtn.classList.toggle("inline-flex", isAdmin);
+      }
+    }
+
+    function openCatalogPdfModal(catName = "Todas", brandName = "Todas") {
+      if (!isAdmin) {
+        openModal("loginModal");
+        return;
+      }
+      openAdminPanel("pdf-catalog");
+      populatePdfFilterSelects();
+      if (catName && document.getElementById("pdfFilterCategory")) {
+        document.getElementById("pdfFilterCategory").value = catName;
+      }
+      if (brandName && document.getElementById("pdfFilterBrand")) {
+        document.getElementById("pdfFilterBrand").value = brandName;
+      }
+    }
+
+    function populatePdfFilterSelects() {
+      const catSelect = document.getElementById("pdfFilterCategory");
+      const brandSelect = document.getElementById("pdfFilterBrand");
+      if (!catSelect || !brandSelect) return;
+
+      const currentCat = catSelect.value;
+      const currentBrand = brandSelect.value;
+
+      catSelect.innerHTML = `<option value="Todas">Todas las categorías (Catálogo General)</option>` +
+        categories.map(c => `<option value="${c.nombre}">${c.nombre}</option>`).join("");
+      if ([...catSelect.options].some(o => o.value === currentCat)) catSelect.value = currentCat;
+
+      const brands = [...new Set(products.filter(p => p.activo && p.marca).map(p => p.marca))];
+      brandSelect.innerHTML = `<option value="Todas">Todas las marcas</option>` +
+        brands.map(b => `<option value="${b}">${b}</option>`).join("");
+      if ([...brandSelect.options].some(o => o.value === currentBrand)) brandSelect.value = currentBrand;
     }
 
     function openAdminPanel(tab = "productos", openForm = false) {
@@ -2179,19 +2340,506 @@
     }
 
     function switchAdminTab(tab) {
-      ["productos", "categorias", "configuracion", "supabase"].forEach(t => {
+      ["productos", "categorias", "configuracion", "pdf-catalog", "supabase"].forEach(t => {
         const view = document.getElementById(`adminView-${t}`);
         const tabBtn = document.getElementById(`admTab-${t}`);
         if (view) view.classList.toggle("hidden", t !== tab);
         if (tabBtn) {
           if (t === tab) {
-            tabBtn.className = "py-2.5 px-4 border-b-2 border-carcasa-green text-carcasa-green";
+            tabBtn.className = "py-2.5 px-4 border-b-2 border-carcasa-green text-carcasa-green font-bold flex items-center gap-1.5 whitespace-nowrap";
           } else {
-            tabBtn.className = "py-2.5 px-4 border-b-2 border-transparent text-gray-500 hover:text-carcasa-black";
+            tabBtn.className = "py-2.5 px-4 border-b-2 border-transparent text-gray-500 hover:text-carcasa-black flex items-center gap-1.5 whitespace-nowrap";
           }
         }
       });
+      if (tab === "pdf-catalog") {
+        populatePdfFilterSelects();
+      }
       lucide.createIcons();
+    }
+
+    // =========================================================================
+    // GENERADOR AUTOMÁTICO DE CATÁLOGO PDF EDITORIAL (CANVA-STYLE)
+    // =========================================================================
+    let lastGeneratedPdfBlob = null;
+    let lastGeneratedPdfDoc = null;
+    let lastGeneratedPdfUrl = "";
+
+    function updatePdfProgressText(text) {
+      const el = document.getElementById("pdfProgressText");
+      if (el) el.textContent = text;
+    }
+
+    function copyPdfGeneratedLink() {
+      const input = document.getElementById("pdfGeneratedLinkInput");
+      if (input && input.value) {
+        navigator.clipboard.writeText(input.value);
+        showToast("Enlace del catálogo PDF copiado al portapapeles");
+      }
+    }
+
+    async function handleGenerateCatalogPdf() {
+      const selectedCat = document.getElementById("pdfFilterCategory").value;
+      const selectedBrand = document.getElementById("pdfFilterBrand").value;
+      const includeCover = document.getElementById("pdfIncludeCover").checked;
+      const includePrices = document.getElementById("pdfIncludePrices").checked;
+
+      // Filtrar productos
+      let targetProducts = products.filter(p => {
+        if (!p.activo) return false;
+        if (selectedCat !== "Todas" && p.categoria !== selectedCat) return false;
+        if (selectedBrand !== "Todas" && p.marca !== selectedBrand) return false;
+        return true;
+      });
+
+      if (targetProducts.length === 0) {
+        showToast("No hay equipos activos que coincidan con los filtros seleccionados");
+        return;
+      }
+
+      const statusBox = document.getElementById("pdfLoadingStatus");
+      const resultBox = document.getElementById("pdfResultCard");
+      const btnGenerate = document.getElementById("btnGenerateCatalogPdf");
+
+      statusBox.classList.remove("hidden");
+      resultBox.classList.add("hidden");
+      btnGenerate.disabled = true;
+      btnGenerate.classList.add("opacity-50");
+
+      try {
+        updatePdfProgressText("Iniciando compilador de catálogo PDF...");
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({
+          orientation: "portrait",
+          unit: "mm",
+          format: "a4"
+        });
+
+        // Dimensiones estándar A4 a 150 DPI
+        const W = 1240;
+        const H = 1754;
+
+        // Agrupar por categoría
+        const categoriesMap = {};
+        targetProducts.forEach(p => {
+          const cat = p.categoria || "Maquinaria General";
+          if (!categoriesMap[cat]) categoriesMap[cat] = [];
+          categoriesMap[cat].push(p);
+        });
+
+        const categoryNames = Object.keys(categoriesMap);
+
+        // Calcular total de páginas
+        let totalPages = 0;
+        if (includeCover) totalPages += 1;
+        categoryNames.forEach(cat => {
+          const prods = categoriesMap[cat];
+          totalPages += Math.ceil(prods.length / 3);
+        });
+
+        let currentPageNum = 1;
+
+        // ==========================================
+        // 1. PÁGINA DE PORTADA (SI ESTÁ ACTIVA)
+        // ==========================================
+        if (includeCover) {
+          updatePdfProgressText(`Generando portada institucional (Página 1 de ${totalPages})...`);
+          const coverCanvas = document.createElement("canvas");
+          coverCanvas.width = W;
+          coverCanvas.height = H;
+          const ctx = coverCanvas.getContext("2d");
+
+          // Fondo oscuro industrial (#171A18)
+          ctx.fillStyle = "#171A18";
+          ctx.fillRect(0, 0, W, H);
+
+          // Detalles decorativos corporativos
+          ctx.fillStyle = "#276B24";
+          ctx.fillRect(0, 0, W, 24);
+          ctx.fillRect(0, H - 24, W, 24);
+
+          ctx.fillStyle = "#D5A52B";
+          ctx.fillRect(0, 24, W, 6);
+          ctx.fillRect(0, H - 30, W, 6);
+
+          // Marco interior sutil
+          ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
+          ctx.lineWidth = 2;
+          ctx.strokeRect(60, 60, W - 120, H - 120);
+
+          // Logotipo oficial CARCASA
+          const logoImg = await loadSafeImage("assets/images/logo.jpg");
+          const logoSize = 220;
+          const logoX = (W - logoSize) / 2;
+          const logoY = 320;
+
+          drawRoundedRect(ctx, logoX, logoY, logoSize, logoSize, 30);
+          ctx.fillStyle = "#FFFFFF";
+          ctx.fill();
+          ctx.lineWidth = 4;
+          ctx.strokeStyle = "#276B24";
+          ctx.stroke();
+
+          if (logoImg) {
+            ctx.save();
+            drawRoundedRect(ctx, logoX + 6, logoY + 6, logoSize - 12, logoSize - 12, 24);
+            ctx.clip();
+            ctx.drawImage(logoImg, logoX + 6, logoY + 6, logoSize - 12, logoSize - 12);
+            ctx.restore();
+          }
+
+          // Textos institucionales Portada
+          ctx.fillStyle = "#FFFFFF";
+          ctx.font = "900 68px Inter, Arial, sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillText("CARCASA", W / 2, 630);
+
+          ctx.fillStyle = "#D5A52B";
+          ctx.font = "800 28px Inter, Arial, sans-serif";
+          ctx.fillText("JINOTEGA • NICARAGUA", W / 2, 680);
+
+          ctx.fillStyle = "#FFFFFF";
+          ctx.font = "900 42px Inter, Arial, sans-serif";
+          ctx.fillText("CATÁLOGO DE PRODUCTOS", W / 2, 790);
+
+          ctx.fillStyle = "#20B9EF";
+          ctx.font = "700 24px Inter, Arial, sans-serif";
+          ctx.fillText("MAQUINARIA AGRÍCOLA • INDUSTRIAL • MOTORES • REPUESTOS", W / 2, 840);
+
+          // Resumen del filtro
+          const subtitleText = selectedCat === "Todas"
+            ? "LÍNEA COMPLETA DE EQUIPOS COMERCIALES"
+            : `LÍNEA ESPECIALIZADA: ${selectedCat.toUpperCase()}`;
+          ctx.fillStyle = "#9CA3AF";
+          ctx.font = "600 22px Inter, Arial, sans-serif";
+          ctx.fillText(subtitleText, W / 2, 920);
+
+          // Cuadro de contacto inferior en portada
+          const contactBoxW = 900;
+          const contactBoxH = 260;
+          const contactBoxX = (W - contactBoxW) / 2;
+          const contactBoxY = H - 420;
+
+          drawRoundedRect(ctx, contactBoxX, contactBoxY, contactBoxW, contactBoxH, 20);
+          ctx.fillStyle = "rgba(255, 255, 255, 0.05)";
+          ctx.fill();
+          ctx.strokeStyle = "rgba(39, 107, 36, 0.6)";
+          ctx.lineWidth = 2;
+          ctx.stroke();
+
+          ctx.fillStyle = "#D5A52B";
+          ctx.font = "800 22px Inter, Arial, sans-serif";
+          ctx.fillText("ATENCIÓN COMERCIAL Y COTIZACIONES INMEDIATAS", W / 2, contactBoxY + 55);
+
+          ctx.fillStyle = "#FFFFFF";
+          ctx.font = "900 36px Inter, Arial, sans-serif";
+          ctx.fillText(`WhatsApp / Teléfono: ${config.phoneDisplay}`, W / 2, contactBoxY + 115);
+
+          ctx.fillStyle = "#E5E7EB";
+          ctx.font = "500 22px Inter, Arial, sans-serif";
+          ctx.fillText(config.address, W / 2, contactBoxY + 165);
+
+          ctx.fillStyle = "#20B9EF";
+          ctx.font = "800 22px Inter, Arial, sans-serif";
+          ctx.fillText("🚚 ENVÍOS A TODOS LOS DEPARTAMENTOS DE NICARAGUA", W / 2, contactBoxY + 215);
+
+          ctx.textAlign = "left";
+
+          doc.addImage(coverCanvas.toDataURL("image/jpeg", 0.92), "JPEG", 0, 0, 210, 297);
+          currentPageNum++;
+        }
+
+        // ==========================================
+        // 2. PÁGINAS DE PRODUCTOS (3 POR PÁGINA)
+        // ==========================================
+        for (let cIdx = 0; cIdx < categoryNames.length; cIdx++) {
+          const catName = categoryNames[cIdx];
+          const catProds = categoriesMap[catName];
+          const chunks = [];
+          for (let i = 0; i < catProds.length; i += 3) {
+            chunks.push(catProds.slice(i, i + 3));
+          }
+
+          for (let chIdx = 0; chIdx < chunks.length; chIdx++) {
+            const pageProds = chunks[chIdx];
+            updatePdfProgressText(`Maquetando ${catName} (Página ${currentPageNum} de ${totalPages})...`);
+
+            const pageCanvas = document.createElement("canvas");
+            pageCanvas.width = W;
+            pageCanvas.height = H;
+            const ctx = pageCanvas.getContext("2d");
+
+            // Fondo blanco puro
+            ctx.fillStyle = "#FFFFFF";
+            ctx.fillRect(0, 0, W, H);
+
+            // A. LISTÓN ROJO LATERAL IZQUIERDO CON NÚMERO DE PÁGINA (ESTILO EJEMPLO)
+            const ribbonX = 50;
+            const ribbonY = 40;
+            const ribbonW = 90;
+            const ribbonH = 145;
+            const notchH = 26;
+
+            ctx.beginPath();
+            ctx.moveTo(ribbonX, ribbonY);
+            ctx.lineTo(ribbonX + ribbonW, ribbonY);
+            ctx.lineTo(ribbonX + ribbonW, ribbonY + ribbonH);
+            ctx.lineTo(ribbonX + ribbonW / 2, ribbonY + ribbonH - notchH);
+            ctx.lineTo(ribbonX, ribbonY + ribbonH);
+            ctx.closePath();
+            ctx.fillStyle = "#DC2626"; // Rojo vivo
+            ctx.fill();
+
+            // Número en el listón
+            ctx.fillStyle = "#FFFFFF";
+            ctx.font = "900 56px Inter, Arial, sans-serif";
+            ctx.textAlign = "center";
+            ctx.fillText(String(currentPageNum), ribbonX + ribbonW / 2, ribbonY + 75);
+            ctx.textAlign = "left";
+
+            // B. BANNER SUPERIOR AZUL OSCURO / INDUSTRIAL (#0F1E36)
+            const bannerX = 145;
+            const bannerY = 40;
+            const bannerW = W - bannerX - 50;
+            const bannerH = 110;
+
+            ctx.fillStyle = "#0F1E36"; // Azul Marino profundo
+            ctx.fillRect(bannerX, bannerY, bannerW, bannerH);
+
+            // Borde verde inferior del banner (#276B24)
+            ctx.fillStyle = "#276B24";
+            ctx.fillRect(bannerX, bannerY + bannerH - 6, bannerW, 6);
+
+            // Nombre de Categoría
+            ctx.fillStyle = "#FFFFFF";
+            ctx.font = "900 34px Inter, Arial, sans-serif";
+            const cleanCatTitle = catName.toUpperCase();
+            ctx.fillText(cleanCatTitle, bannerX + 28, bannerY + 68);
+
+            // Tres estrellas blancas a la derecha
+            ctx.fillStyle = "#FFFFFF";
+            ctx.font = "700 30px Arial, sans-serif";
+            ctx.textAlign = "right";
+            ctx.fillText("★ ★ ★", W - 78, bannerY + 66);
+            ctx.textAlign = "left";
+
+            // C. RENDERIZAR HASTA 3 EQUIPOS EN LA PÁGINA
+            const startY = 220;
+            const itemH = 460;
+
+            for (let pIdx = 0; pIdx < pageProds.length; pIdx++) {
+              const p = pageProds[pIdx];
+              const itemY = startY + pIdx * itemH;
+
+              // 1. COLUMNA IZQUIERDA: ESPECIFICACIONES TÉCNICAS
+              const leftX = 70;
+              const leftW = 560;
+
+              // Marca en rojo oscuro (#991B1B)
+              const brandText = `MARCA: ${(p.marca || 'CARCASA').toUpperCase()}`;
+              ctx.fillStyle = "#991B1B";
+              ctx.font = "800 24px Inter, Arial, sans-serif";
+              ctx.fillText(brandText, leftX, itemY + 36);
+
+              // Nombre / Modelo del equipo
+              ctx.fillStyle = "#171A18";
+              ctx.font = "800 24px Inter, Arial, sans-serif";
+              const titleLines = wrapCanvasText(ctx, p.nombre, leftW, 2);
+              let titleCursorY = itemY + 70;
+              titleLines.forEach(tl => {
+                ctx.fillText(tl, leftX, titleCursorY);
+                titleCursorY += 32;
+              });
+
+              // Lista de especificaciones con líneas divisorias (estilo Canva)
+              const specsList = (p.specs && p.specs.length > 0)
+                ? p.specs.slice(0, 4)
+                : ["Excelente rendimiento de trabajo", "Construcción reforzada para uso continuo", "Garantía y respaldo técnico"];
+
+              let specCursorY = Math.max(titleCursorY + 12, itemY + 145);
+              const specRowHeight = 48;
+
+              specsList.forEach((spLine, sIdx) => {
+                // Línea divisoria superior
+                ctx.beginPath();
+                ctx.moveTo(leftX, specCursorY - 26);
+                ctx.lineTo(leftX + leftW - 30, specCursorY - 26);
+                ctx.strokeStyle = "#E5E7EB";
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+
+                const parts = spLine.split(":");
+                if (parts.length > 1) {
+                  const lbl = parts[0].trim();
+                  const val = parts.slice(1).join(":").trim();
+                  ctx.fillStyle = "#171A18";
+                  ctx.font = "800 22px Inter, Arial, sans-serif";
+                  ctx.fillText(`${lbl}:`, leftX, specCursorY);
+
+                  const lblW = ctx.measureText(`${lbl}: `).width;
+                  ctx.font = "600 22px Inter, Arial, sans-serif";
+                  ctx.fillText(val, leftX + lblW, specCursorY);
+                } else {
+                  ctx.fillStyle = "#374151";
+                  ctx.font = "600 22px Inter, Arial, sans-serif";
+                  ctx.fillText(spLine, leftX, specCursorY);
+                }
+
+                specCursorY += specRowHeight;
+              });
+
+              // Línea divisoria final de specs
+              ctx.beginPath();
+              ctx.moveTo(leftX, specCursorY - 26);
+              ctx.lineTo(leftX + leftW - 30, specCursorY - 26);
+              ctx.strokeStyle = "#E5E7EB";
+              ctx.lineWidth = 1.5;
+              ctx.stroke();
+
+              // Mostrar precio si está habilitado y tiene precio
+              const formattedPrice = formatProductPrice(p);
+              if (includePrices && formattedPrice) {
+                ctx.fillStyle = "#276B24";
+                ctx.font = "900 26px Inter, Arial, sans-serif";
+                ctx.fillText(`Precio Ref: ${formattedPrice}`, leftX, specCursorY + 10);
+              }
+
+              // 2. COLUMNA DERECHA: FOTOGRAFÍA DEL PRODUCTO
+              const imgBoxX = 660;
+              const imgBoxY = itemY + 20;
+              const imgBoxW = 500;
+              const imgBoxH = 380;
+
+              const mainImgUrl = (p.imagenes && p.imagenes.length) ? p.imagenes[0] : "";
+              const prodImg = await loadSafeImage(mainImgUrl);
+
+              if (prodImg) {
+                const scale = Math.min(imgBoxW / prodImg.naturalWidth, imgBoxH / prodImg.naturalHeight);
+                const drawW = prodImg.naturalWidth * scale;
+                const drawH = prodImg.naturalHeight * scale;
+                const offX = imgBoxX + (imgBoxW - drawW) / 2;
+                const offY = imgBoxY + (imgBoxH - drawH) / 2;
+
+                ctx.save();
+                drawRoundedRect(ctx, offX, offY, drawW, drawH, 16);
+                ctx.clip();
+                ctx.drawImage(prodImg, offX, offY, drawW, drawH);
+                ctx.restore();
+              } else {
+                drawRoundedRect(ctx, imgBoxX + 40, imgBoxY + 30, imgBoxW - 80, imgBoxH - 60, 16);
+                ctx.fillStyle = "#F1F3F1";
+                ctx.fill();
+                ctx.fillStyle = "#9CA3AF";
+                ctx.font = "700 22px Inter, Arial, sans-serif";
+                ctx.textAlign = "center";
+                ctx.fillText("CARCASA JINOTEGA", imgBoxX + imgBoxW / 2, imgBoxY + imgBoxH / 2);
+                ctx.textAlign = "left";
+              }
+
+              // Separador sutil entre productos
+              if (pIdx < pageProds.length - 1) {
+                ctx.beginPath();
+                ctx.moveTo(70, itemY + itemH - 15);
+                ctx.lineTo(W - 70, itemY + itemH - 15);
+                ctx.strokeStyle = "#F3F4F6";
+                ctx.lineWidth = 2;
+                ctx.stroke();
+              }
+            }
+
+            // D. PIE DE PÁGINA CORPORATIVO
+            const footerY = H - 90;
+
+            // Línea verde superior de pie
+            ctx.fillStyle = "#276B24";
+            ctx.fillRect(50, footerY - 15, W - 100, 3);
+
+            ctx.fillStyle = "#171A18";
+            ctx.font = "800 20px Inter, Arial, sans-serif";
+            ctx.fillText(`CARCASA JINOTEGA  •  WhatsApp / Ventas: ${config.phoneDisplay}`, 50, footerY + 20);
+
+            ctx.fillStyle = "#6B7280";
+            ctx.font = "600 18px Inter, Arial, sans-serif";
+            ctx.fillText(`${config.address}  •  Envíos a todo Nicaragua`, 50, footerY + 50);
+
+            ctx.textAlign = "right";
+            ctx.fillStyle = "#171A18";
+            ctx.font = "700 20px Inter, Arial, sans-serif";
+            ctx.fillText(`Página ${currentPageNum} de ${totalPages}`, W - 50, footerY + 35);
+            ctx.textAlign = "left";
+
+            if (doc.getNumberOfPages() > 0 && (includeCover || currentPageNum > 1)) {
+              doc.addPage();
+            }
+            doc.addImage(pageCanvas.toDataURL("image/jpeg", 0.92), "JPEG", 0, 0, 210, 297);
+            currentPageNum++;
+          }
+        }
+
+        // ==========================================
+        // 3. GENERACIÓN DEL ARCHIVO BLOB Y ENLACE
+        // ==========================================
+        updatePdfProgressText("Generando archivo PDF y enlace de visualización...");
+        const pdfBlob = doc.output("blob");
+        const localBlobUrl = URL.createObjectURL(pdfBlob);
+        lastGeneratedPdfBlob = pdfBlob;
+        lastGeneratedPdfDoc = doc;
+
+        let finalPublicUrl = localBlobUrl;
+
+        // Subir a Supabase Storage si está conectado para enlace permanente
+        if (sb) {
+          try {
+            updatePdfProgressText("Subiendo PDF a almacenamiento en la nube (Supabase)...");
+            const catSlug = generateSlug(selectedCat);
+            const fileName = `catalogos/catalogo-carcasa-${catSlug}-${Date.now()}.pdf`;
+            const { error: uploadError } = await sb.storage.from("equipos").upload(fileName, pdfBlob, {
+              contentType: "application/pdf",
+              upsert: true
+            });
+            if (!uploadError) {
+              const { data: pubData } = sb.storage.from("equipos").getPublicUrl(fileName);
+              if (pubData && pubData.publicUrl) {
+                finalPublicUrl = pubData.publicUrl;
+              }
+            }
+          } catch (storageErr) {
+            console.warn("Fallo al subir a Storage, usando enlace local:", storageErr);
+          }
+        }
+
+        lastGeneratedPdfUrl = finalPublicUrl;
+
+        // Configurar botones de resultado
+        document.getElementById("pdfGeneratedLinkInput").value = finalPublicUrl;
+        document.getElementById("btnOpenPdfNewTab").href = finalPublicUrl;
+        document.getElementById("btnDownloadPdfFile").onclick = () => {
+          const downloadName = `catalogo-carcasa-${generateSlug(selectedCat)}.pdf`;
+          doc.save(downloadName);
+        };
+
+        const waText = `Hola, te comparto el Catálogo Digital de CARCASA Jinotega:\n📄 Ver Catálogo PDF: ${finalPublicUrl}`;
+        document.getElementById("btnSharePdfWhatsapp").href = `https://api.whatsapp.com/send?text=${encodeURIComponent(waText)}`;
+
+        document.getElementById("pdfSummaryInfo").textContent = `${targetProducts.length} equipo${targetProducts.length === 1 ? '' : 's'} • ${totalPages} página${totalPages === 1 ? '' : 's'} (3 productos por página)`;
+
+        statusBox.classList.add("hidden");
+        resultBox.classList.remove("hidden");
+        btnGenerate.disabled = false;
+        btnGenerate.classList.remove("opacity-50");
+
+        showToast("¡Catálogo PDF generado con éxito!");
+
+        // Abrir automáticamente el enlace en una nueva pestaña como solicitó el usuario
+        window.open(finalPublicUrl, "_blank");
+
+      } catch (err) {
+        console.error("Error al generar catálogo PDF:", err);
+        statusBox.classList.add("hidden");
+        btnGenerate.disabled = false;
+        btnGenerate.classList.remove("opacity-50");
+        showToast("Ocurrió un error al generar el PDF");
+      }
     }
 
     function toggleProductForm(show) {
