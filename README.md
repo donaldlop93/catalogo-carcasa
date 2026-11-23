@@ -16,7 +16,14 @@ Aplicación web responsiva (*Mobile-First*) y herramienta comercial interactiva 
 
 ### Modo Administrador (Uso Interno)
 - **CRUD Completo:** Creación, edición, activación/desactivación y eliminación de equipos y categorías.
-- **Generador de Ficha Técnica HD (.PNG):** Renderizado automático mediante HTML5 Canvas en alta resolución (1080px de ancho) con el logotipo oficial de CARCASA Jinotega, fotografía, características técnicas, precio y datos de contacto listos para despacho comercial.
+- **Generador Automático de Catálogo PDF Editorial (Estilo Canva / Revista):**
+  - Generación automática en formato A4 de alta definición (150 DPI).
+  - Maquetación de **3 productos por página** con especificaciones técnicas alineadas con líneas divisorias, marca en rojo oscuro, fotografía nítida y precios de referencia.
+  - Listón superior rojo tipo marcador con número de página y banner azul marino con el nombre de la categoría y estrellas.
+  - Filtro por categoría (catálogo general o por línea como Plantas Eléctricas, Bombas, etc.) y por marca.
+  - **Generación automática de enlace web para verlo en línea** (con subida a Supabase Storage para enlace público permanente, o enlace Blob para visualización instantánea).
+  - Apertura automática en nueva pestaña y botón para compartir por WhatsApp o descargar directamente el archivo PDF.
+- **Generador de Ficha Técnica Individual HD (.PNG):** Renderizado automático mediante HTML5 Canvas en alta resolución (1080px de ancho) con el logotipo oficial de CARCASA Jinotega, fotografía, características técnicas, precio y datos de contacto listos para despacho comercial.
 - **Compartir Rápido:**
   - Descarga directa de la ficha en formato `.PNG`.
   - Copiar imagen al portapapeles (`Ctrl+V`) para pegar directamente en WhatsApp Web o Messenger.
